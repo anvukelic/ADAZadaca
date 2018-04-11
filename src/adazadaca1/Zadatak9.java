@@ -23,7 +23,7 @@ public class Zadatak9 {
                     (Integer.parseInt(tekst) > 64 && Integer.parseInt(tekst) < 91) ||
                     (Integer.parseInt(tekst) > 96 && Integer.parseInt(tekst) < 123) ) {
                     tekst = Character.toString((char) Integer.parseInt(tekst));
-                }
+                } 
                 System.out.print(tekst);
                 n++;
             } else {
