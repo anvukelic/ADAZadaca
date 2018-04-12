@@ -117,6 +117,10 @@ public class Zadatak10 {
                 for (int k = 0; k < j; k++) {
                     sb.append(niz[k]);
                 }
+                if(e2m.get(sb.toString()) == null){
+                    JOptionPane.showMessageDialog(null, "Krivi unos");
+                    prevediMorzeovKod();
+                }
                 recenica.append(e2m.get(sb.toString()));
                 sb = new StringBuilder();
                 i++;
