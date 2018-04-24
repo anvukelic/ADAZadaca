@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ADACalculator</string>
+    <string name="first_number_input">Prvi broj</string>
+    <string name="second_number_input">Drugi broj</string>
+    <string name="first_math_action">Izvrši prvu matematičku operaciju</string>
+    <string name="reset">Resetiraj</string>
+    <string name="empty_number">Broj ne može biti prazan</string>
+</resources>

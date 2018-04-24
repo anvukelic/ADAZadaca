@@ -1,0 +1,12 @@
+<resources>
+    <string name="app_name">ADACalculator</string>
+    <string name="first_number_input">First number</string>
+    <string name="second_number_input">Second number</string>
+    <string name="addition_sign">+</string>
+    <string name="subtraction_sign">-</string>
+    <string name="multiplication_sign">X</string>
+    <string name="divison_sign">/</string>
+    <string name="first_math_action">Do first math action</string>
+    <string name="reset">Reset</string>
+    <string name="empty_number">Number can not be empty</string>
+</resources>
