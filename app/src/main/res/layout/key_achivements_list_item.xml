@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_margin="@dimen/between_parent_margin"
+    android:layout_marginBottom="@dimen/between_parent_margin">
+
+    <ImageView
+        android:id="@+id/achivement_image"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@android:drawable/sym_def_app_icon" />
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/between_parent_margin"
+        android:orientation="vertical">
+        <TextView
+            android:id="@+id/achivement_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:hint="@string/lorem_ipsum_title"
+            android:textSize="@dimen/content_header"
+            android:textColor="@color/colorAccent"/>
+        <TextView
+            android:id="@+id/achivement_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/content_text"
+            android:hint="@string/lorem_ipsum_text"
+            android:textSize="@dimen/content_text"/>
+    </LinearLayout>
+
+</LinearLayout>

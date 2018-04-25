@@ -1,0 +1,43 @@
+<resources>
+    <string name="app_name" translatable="false">Andrej Vukelic CV</string>
+    <string name="name_lastname" translatable="false">Andrej Vukelić</string>
+    <string name="current_position" translatable="false">Student</string>
+
+    <!--Contact and social media strings-->
+    <string name="contact_header">Contact</string>
+    <string name="my_email" translatable="false">avukelic031@gmail.com</string>
+    <string name="my_facebook" translatable="false">Andrej Vukelić</string>
+    <string name="my_github" translatable="false">avukelic</string>
+    <string name="my_number" translatable="false">+385955052036</string>
+    <string name="social_media_header">Social media</string>
+    <string name="my_twitter" translatable="false">\@vukelic_andrej</string>
+    <string name="my_linkedin" translatable="false">Andrej Vukelić</string>
+
+
+    <string name="education_header">Education</string>
+
+    <!--About me strings-->
+    <string name="about_me_header">about me</string>
+    <string name="location">From: Osijek</string>
+    <string name="date_of_birth">Date of birth: 26. September 1994.</string>
+    <string name="gender">Gender: Male</string>
+
+    <string name="lorem_ipsum_text" translatable="false">Lorem ipsum is simply duummy text</string>
+    <string name="lorem_ipsum_title" translatable="false">Lorem ipsum</string>
+
+
+    <!--Strings for language part-->
+    <string name="b2_language_level" translatable="false">B2</string>
+    <string name="b1_language_level" translatable="false">B1</string>
+    <string name="a1_language_level" translatable="false">A1</string>
+    <string name="understanding_language">Understanding</string>
+    <string name="speaking_language">Speaking</string>
+    <string name="writing_language">Writing</string>
+    <string name="listen_language">Listen</string>
+    <string name="read_language">Read</string>
+    <string name="interact_language">Interact</string>
+    <string name="product_language">Product</string>
+    <string name="english_language">English</string>
+    <string name="norwegian_language">Norwegian</string>
+    <string name="language_skills">Language skills</string>
+</resources>

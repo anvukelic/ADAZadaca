@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="contact_header">Kontakt</string>
+    <string name="social_media_header">Društvene mreže</string>
+    <string name="education_header">Školovanje</string>
+    <string name="about_me_header">O meni</string>
+    <string name="location">Živim u: Osijek</string>
+    <string name="date_of_birth">Datum rođenja: 26.09.1994</string>
+    <string name="gender">Spol: Muško</string>
+
+
+    <!--Strings for language part-->
+
+    <string name="understanding_language">Razumijevanje</string>
+    <string name="speaking_language">Govor</string>
+    <string name="writing_language">Pisanje</string>
+    <string name="listen_language">Slušanje</string>
+    <string name="read_language">Čitanje</string>
+    <string name="interact_language">Interakcija</string>
+    <string name="product_language">Produkcija</string>
+    <string name="english_language">Engleski</string>
+    <string name="norwegian_language">Norveški</string>
+</resources>

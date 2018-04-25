@@ -1,0 +1,40 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+    <style name="HeaderText">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+    </style>
+    
+    <style name="ContentHeader">
+        <item name="android:textAllCaps">true</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">@dimen/between_parent_margin</item>
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:textSize">@dimen/content_header</item>
+    </style>
+    <style name="ContentText">
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:layout_marginTop">@dimen/between_elements_margin</item>
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/content_text</item>
+        <item name="android:textSize">@dimen/content_text</item>
+    </style>
+    <style name="TableHeader">
+        <item name="android:textColor">@color/colorAccent</item>
+        <item name="android:textSize">@dimen/content_header</item>
+        <item name="android:textAllCaps">true</item>
+    </style>
+
+
+
+
+</resources>

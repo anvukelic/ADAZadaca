@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="between_parent_margin">12dp</dimen>
+    <dimen name="header_main">30sp</dimen>
+    <dimen name="content_header">20sp</dimen>
+    <dimen name="content_text">12sp</dimen>
+    <dimen name="between_elements_margin">8dp</dimen>
+    <dimen name="table_header">14sp</dimen>
+    <dimen name="table_content">12sp</dimen>
+</resources>

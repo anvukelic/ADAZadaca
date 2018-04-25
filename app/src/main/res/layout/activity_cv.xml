@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#ffffff"
+    android:orientation="vertical"
+    tools:context=".CVActivity">
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/colorPrimary">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="@dimen/between_parent_margin"
+            android:layout_marginTop="@dimen/between_parent_margin"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/ime_prezime"
+                style="@style/HeaderText"
+                android:text="@string/name_lastname"
+                android:textAllCaps="true"
+                android:textColor="@color/header_text"
+                android:textSize="@dimen/header_main" />
+
+            <TextView
+                android:id="@+id/trenutna_pozicija"
+                style="@style/HeaderText"
+                android:layout_marginTop="@dimen/between_elements_margin"
+                android:text="@string/current_position"
+                android:textColor="@color/header_text" />
+        </LinearLayout>
+
+        <ImageView
+            android:id="@+id/person_picture"
+            android:layout_width="125dp"
+            android:layout_height="125dp"
+            android:layout_alignParentEnd="true"
+            android:layout_marginBottom="@dimen/between_parent_margin"
+            android:layout_marginEnd="@dimen/between_parent_margin"
+            android:layout_marginTop="@dimen/between_parent_margin"
+            android:src="@drawable/my_picutre" />
+    </RelativeLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/between_parent_margin"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/ContentHeader"
+                        android:text="@string/about_me_header" />
+
+                    <TextView
+                        style="@style/ContentText"
+                        android:text="@string/location" />
+
+                    <TextView
+                        style="@style/ContentText"
+                        android:text="@string/gender" />
+
+                    <TextView
+                        style="@style/ContentText"
+                        android:text="@string/date_of_birth" />
+
+                    <TextView
+                        style="@style/ContentHeader"
+                        android:text="@string/contact_header" />
+
+                    <TextView
+                        android:id="@+id/email"
+                        style="@style/ContentText"
+                        android:clickable="true"
+                        android:drawablePadding="@dimen/between_elements_margin"
+                        android:drawableStart="@drawable/email_icon"
+                        android:focusable="true"
+                        android:text="@string/my_email" />
+
+                    <TextView
+                        android:id="@+id/phoneNumber"
+                        style="@style/ContentText"
+                        android:clickable="true"
+                        android:drawablePadding="@dimen/between_elements_margin"
+                        android:drawableStart="@drawable/phone_icon"
+                        android:focusable="true"
+                        android:text="@string/my_number" />
+
+                    <TextView
+                        style="@style/ContentHeader"
+                        android:text="@string/social_media_header" />
+
+                    <TextView
+                        android:id="@+id/facebookProfile"
+                        style="@style/ContentText"
+                        android:clickable="true"
+                        android:drawablePadding="@dimen/between_elements_margin"
+                        android:drawableStart="@drawable/fb_icon"
+                        android:focusable="true"
+                        android:text="@string/my_facebook" />
+
+                    <TextView
+                        android:id="@+id/twitterProfile"
+                        style="@style/ContentText"
+                        android:clickable="true"
+                        android:drawablePadding="@dimen/between_elements_margin"
+                        android:drawableStart="@drawable/twitter_icon"
+                        android:focusable="true"
+                        android:text="@string/my_twitter" />
+
+                    <TextView
+                        android:id="@+id/githubProfile"
+                        style="@style/ContentText"
+                        android:clickable="true"
+                        android:drawablePadding="@dimen/between_elements_margin"
+                        android:drawableStart="@drawable/github_icon"
+                        android:focusable="true"
+                        android:text="@string/my_github" />
+
+                    <TextView
+                        android:id="@+id/linkedinProfile"
+                        style="@style/ContentText"
+                        android:clickable="true"
+                        android:drawablePadding="@dimen/between_elements_margin"
+                        android:drawableStart="@drawable/linkedin_icon"
+                        android:focusable="true"
+                        android:text="@string/my_linkedin" />
+                </LinearLayout>
+
+                <ListView
+                    android:id="@+id/key_achivements_list"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="@dimen/between_elements_margin"
+                    android:layout_marginStart="@dimen/between_elements_margin"
+                    android:layout_marginTop="@dimen/between_parent_margin"
+                    android:layout_weight="1.3"></ListView>
+
+            </LinearLayout>
+
+            <TableLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+
+                android:layout_margin="@dimen/between_parent_margin"
+                android:shrinkColumns="0"
+                android:stretchColumns="0,2,3">
+
+                <TableRow>
+                    <ImageView
+                        android:layout_gravity="center"
+                        android:src="@drawable/language_icon" />
+                    <TextView
+                        android:text="@string/language_skills"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="@dimen/table_header" />
+                </TableRow>
+
+                <TableRow android:layout_marginBottom="@dimen/between_elements_margin">
+
+                    <TextView
+                        android:text="      "
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="@dimen/content_header" />
+
+                    <TextView
+                        android:text="@string/understanding_language"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="@dimen/table_header" />
+
+                    <TextView
+                        android:text="@string/speaking_language"
+                        android:textAlignment="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="@dimen/table_header" />
+
+                    <TextView
+                        android:text="@string/writing_language"
+                        android:textAlignment="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="@dimen/table_header" />
+                </TableRow>
+
+                <TableRow android:layout_marginBottom="@dimen/between_elements_margin">
+
+                    <TextView
+                        android:text="      "
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorAccent"
+                        android:textSize="@dimen/table_header" />
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_marginEnd="@dimen/between_elements_margin"
+                            android:layout_weight="1"
+                            android:text="@string/listen_language"
+                            android:textAlignment="center"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/read_language"
+                            android:textAlignment="center"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_marginEnd="@dimen/between_elements_margin"
+                            android:layout_marginStart="@dimen/between_elements_margin"
+                            android:layout_weight="1"
+                            android:text="@string/interact_language"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/product_language"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+                    </TableRow>
+
+                    <TextView
+                        android:text=""
+                        android:textAlignment="center"
+                        android:textAllCaps="true"
+                        android:textSize="@dimen/table_header" />
+                </TableRow>
+
+                <TableRow android:layout_marginBottom="@dimen/between_elements_margin">
+
+                    <TextView
+                        android:text="@string/english_language"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/table_content" />
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/b2_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/b2_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/b2_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/b2_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+                    </TableRow>
+
+                    <TextView
+                        android:text="@string/b1_language_level"
+                        android:textAlignment="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/content_text"
+                        android:textSize="@dimen/table_content" />
+                </TableRow>
+
+                <TableRow android:layout_marginBottom="@dimen/between_elements_margin">
+
+                    <TextView
+                        android:text="@string/norwegian_language"
+                        android:textAllCaps="true"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="@dimen/table_content" />
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/a1_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/a1_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+                    </TableRow>
+
+                    <TableRow>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/a1_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:text="@string/a1_language_level"
+                            android:textAlignment="center"
+                            android:textAllCaps="true"
+                            android:textColor="@color/content_text"
+                            android:textSize="@dimen/table_content" />
+                    </TableRow>
+
+                    <TextView
+                        android:text="@string/a1_language_level"
+                        android:textAlignment="center"
+                        android:textAllCaps="true"
+                        android:textColor="@color/content_text"
+                        android:textSize="@dimen/table_content" />
+                </TableRow>
+
+            </TableLayout>
+
+
+        </LinearLayout>
+    </ScrollView>
+
+
+</LinearLayout>
