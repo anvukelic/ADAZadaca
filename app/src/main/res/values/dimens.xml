@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="screen_margin">16dp</dimen>
+    <dimen name="result_header_size">24sp</dimen>
+    <dimen name="result_text_size">16sp</dimen>
+    <dimen name="result_between_elements_margin">8dp</dimen>
+</resources>

@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">ADA Teske Kosti</string>
+    <string name="insert_height">Insert your height in meters</string>
+    <string name="height_input">meters</string>
+    <string name="insert_weight">Inesert your weight in kilograms</string>
+    <string name="weight_input">kilograms</string>
+    <string name="calculate_bmi">Calculate</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="display_bmi">Body mass index</string>
+    <string name="bmi_level">BMI level</string>
+    <string name="underweight_description">An underweight person is a person whose body weight is considered too low to be healthy. Underweight people have a body mass index (BMI) of under 18.5 or a weight 15% to 20% below that normal for their age and height group.</string>
+    <string name="underweight_title">Underweight</string>
+    <string name="healthy_title">Healthy</string>
+    <string name="healthy_description">You are just fine, keep doing it !</string>
+    <string name="overweight_title">Overweight</string>
+    <string name="overweight_description">Being overweight or fat is having more body fat than is optimally healthy. Being overweight is especially common where food supplies are plentiful and lifestyles are sedentary.</string>
+    <string name="obese_title">Obese</string>
+    <string name="obese_description">Please leave your mobile phone and go workout !</string>
+</resources>
