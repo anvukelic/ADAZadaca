@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Taskie</string>
+    <string name="action_settings">Settings</string>
+    <string name="add_newtask">Add task</string>
+    <string name="cancel">cancel</string>
+    <string name="newtask_title">Title</string>
+    <string name="newtask_description">Description</string>
+    <string name="no_title">Title can not be empty</string>
+    <string name="no_description">Description can not be empty</string>
+    <string name="wrong_date">Date can not be in past</string>
+</resources>
