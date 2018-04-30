@@ -1,0 +1,13 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:context="ada.osc.taskie.ui.TaskActivity" >
+    <item
+        android:id="@+id/one"
+        android:title="Check as done"/>
+
+    <item
+        android:id="@+id/two"
+        android:title="Update"/>
+
+</menu>

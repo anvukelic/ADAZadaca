@@ -33,6 +33,8 @@ public class TaskRepository {
         mDatabase.delete(task);
     }
 
+    public void updateTaskPriority(Task task){mDatabase.updateTaskPriorty(task);}
+
     public List<Task> getTasks(){
         return mDatabase.getTasks();
     }

@@ -1,0 +1,10 @@
+package ada.osc.taskie;
+
+import ada.osc.taskie.model.Task;
+
+/**
+ * Created by avukelic on 30-Apr-18.
+ */
+public interface TaskClickListener {
+    void onClick(Task task, int itemId);
+}

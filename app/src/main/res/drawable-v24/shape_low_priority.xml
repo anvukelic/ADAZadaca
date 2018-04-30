@@ -2,4 +2,7 @@
     android:shape="oval">
     <solid
         android:color="#FFD600"/>
+    <stroke
+        android:width="2dp"
+        android:color="@android:color/background_light" />
 </shape>

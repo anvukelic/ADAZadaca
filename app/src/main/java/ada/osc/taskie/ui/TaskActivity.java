@@ -11,12 +11,15 @@ import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -27,24 +30,60 @@ import java.util.List;
 
 import ada.osc.taskie.NewTaskDialogFragment;
 import ada.osc.taskie.R;
+import ada.osc.taskie.TaskClickListener;
 import ada.osc.taskie.TaskRepository;
 import ada.osc.taskie.model.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class TaskActivity extends AppCompatActivity implements NewTaskDialogFragment.OnAddListener {
 
 
     public static final String DB_PREFS = "dbPrefs";
     public static final String TASK_JSON = "taskJson";
-
-    public static final String CREATE_TASK_TAG = "creteTaskDialog";
+    public static final String CREATE_TASK_TAG = "createTaskDialog";
 
     private TaskRepository mTaskRepository = TaskRepository.getInstance();
 
     @BindView(R.id.recycler_view_tasks)
     RecyclerView mRecyclerView;
     private TaskAdapter mAdapter;
+    TaskClickListener mListener = new TaskClickListener() {
+        @Override
+        public void onClick(final Task task, int itemId) {
+            /*PopupMenu popupMenu = new PopupMenu(TaskActivity.this, mItemMenu);
+            popupMenu.getMenuInflater().inflate(R.menu.popup_item_options_menu, popupMenu.getMenu());
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                public boolean onMenuItemClick(MenuItem item) {
+                    switch(item.getItemId()){
+                        case 0:
+                            mTaskRepository.delete(task);
+                            break;
+                        case 1:
+                            break;
+                        default:
+
+                    }
+                    return true;
+                }
+            });
+            popupMenu.show();*/
+            switch(itemId){
+                case R.id.imageview_recyclerview_item_menu:
+                    mTaskRepository.delete(task);
+                    break;
+                case R.id.imageview_recyclerview_priority:
+                    mTaskRepository.updateTaskPriority(task);
+                    System.out.println(mTaskRepository.getTasks().get(mTaskRepository.getTasks().indexOf(task)).getPriority());
+                    break;
+                default:
+            }
+            mAdapter.refreshData(mTaskRepository.getTasks());
+
+        }
+
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +96,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         //getSharedPreferences(DB_PREFS, MODE_PRIVATE).edit().clear().apply();
         getTasksFromSharedPreferences();
         setUpRecyclerView();
+        mAdapter.refreshData(mTaskRepository.getTasks());
 
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
@@ -95,8 +135,9 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         putTasksInSharedPreferences();
     }
 
+
     private void setUpRecyclerView() {
-        mAdapter = new TaskAdapter(mTaskRepository.getTasks());
+        mAdapter = new TaskAdapter(mListener);
         RecyclerView.LayoutManager llm = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());

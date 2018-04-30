@@ -20,6 +20,14 @@ public class FakeDatabase {
         mTasks.remove(task);
     }
 
+    public void updateTaskPriorty(Task task) {
+        Task selectedTask = mTasks.get(mTasks.indexOf(task));
+        selectedTask.setPriority(selectedTask.getPriority()+1);
+        if(selectedTask.getPriority()==3){
+            selectedTask.setPriority(0);
+        }
+    }
+
     public List<Task> getTasks() {
         return new ArrayList<>(mTasks);
     }
