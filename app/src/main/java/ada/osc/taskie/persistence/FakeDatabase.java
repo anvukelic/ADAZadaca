@@ -12,20 +12,21 @@ public class FakeDatabase {
 
     List<Task> mTasks = new ArrayList<>();
 
-    public void insert(Task task){
+    public void insert(Task task) {
         mTasks.add(task);
     }
 
-    public void delete(Task task){
+    public void delete(Task task) {
         mTasks.remove(task);
     }
 
     public void updateTaskPriorty(Task task) {
-        Task selectedTask = mTasks.get(mTasks.indexOf(task));
-        selectedTask.setPriority(selectedTask.getPriority()+1);
-        if(selectedTask.getPriority()==3){
-            selectedTask.setPriority(0);
+        if (task.getPriority() >= 3) {
+            task.setPriority(0);
+        } else {
+            task.setPriority(task.getPriority() + 1);
         }
+
     }
 
     public List<Task> getTasks() {
