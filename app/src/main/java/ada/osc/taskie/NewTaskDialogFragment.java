@@ -1,37 +1,26 @@
 package ada.osc.taskie;
 
-import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
-import android.graphics.Rect;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import java.util.Calendar;
 import java.util.Date;
 
-import ada.osc.taskie.model.Task;
 import ada.osc.taskie.ui.TaskActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 /**
  * Created by avukelic on 28-Apr-18.
@@ -39,12 +28,10 @@ import butterknife.OnClick;
 public class NewTaskDialogFragment extends DialogFragment {
 
     public interface OnAddListener {
-        void sendTaskData(String title, String description, int priority, Date date);
+        void sendTaskData(String title, String description, int priority, Date date, int action, int taskId);
     }
 
     public OnAddListener mOnAddListener;
-
-    private static final String priorityList[] = {"Low", "Med", "High"};
 
     @BindView(R.id.edittext_newtask_title)
     EditText mTitle;
@@ -57,13 +44,17 @@ public class NewTaskDialogFragment extends DialogFragment {
 
     Calendar selectedDate;
 
-
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_creating_task, null);
 
         ButterKnife.bind(this, view);
+        if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
+            createAction();
+        } else {
+            updateAction(getArguments().getString("title"), getArguments().getString("description"), getArguments().getLong("date"));
+        }
         selectedDate = Calendar.getInstance();
         selectedDate.setTimeInMillis(mDate.getDate());
         mDate.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
@@ -72,24 +63,16 @@ public class NewTaskDialogFragment extends DialogFragment {
                 selectedDate.set(year, month, dayOfMonth);
             }
         });
+        return createAlertDialog(view);
+    }
 
-        setupPrioritySpinner();
-
+    //Build AlertDialog
+    //Override positive button to prevent closing DialogFragment when any field is empty
+    //Or date is before today
+    public AlertDialog createAlertDialog(View view) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(view)
-                .setTitle("Create new task")
-                .setPositiveButton(R.string.add_newtask, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-
-                    }
-                })
-                .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        getDialog().dismiss();
-                    }
-                });
+        builder.setView(view);
+        builder = createDialog(builder);
 
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -113,20 +96,55 @@ public class NewTaskDialogFragment extends DialogFragment {
                     mOnAddListener.sendTaskData(
                             mTitle.getText().toString(),
                             mDescription.getText().toString(),
-                            mPriority.getSelectedItemPosition() + 1,
-                            selectedDate.getTime());
+                            mPriority.getSelectedItemPosition(),
+                            selectedDate.getTime(),
+                            getArguments().getInt("action"),
+                            getArguments().getInt("taskId"));
                     getDialog().dismiss();
                 }
             }
         });
-
         return dialog;
     }
 
+    //Set title and set buttons on AlertDialogBuilder
+    public AlertDialog.Builder createDialog(AlertDialog.Builder builder) {
+        if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
+            builder.setTitle("Create new task")
+                    .setPositiveButton(R.string.add_newtask, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
 
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            getDialog().dismiss();
+                        }
+                    });
+        } else {
+            builder.setTitle("Update task")
+                    .setPositiveButton(R.string.update_task, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+
+                        }
+                    })
+                    .setNegativeButton(R.string.cancel, new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            getDialog().dismiss();
+                        }
+                    });
+        }
+        return builder;
+    }
+
+    //Setup priority spinner to show strings from R.array.priority_level_list
     public void setupPrioritySpinner() {
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getActivity(),
-                android.R.layout.simple_spinner_item, priorityList);
+        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
+                R.array.prirority_sort_type_list, android.R.layout.simple_spinner_item);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mPriority.setAdapter(adapter);
@@ -142,6 +160,7 @@ public class NewTaskDialogFragment extends DialogFragment {
         }
     }
 
+    //Check if date is in past
     public boolean isValidDate() {
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(mDate.getDate());
@@ -156,12 +175,25 @@ public class NewTaskDialogFragment extends DialogFragment {
 
         if (yearSelected <= yearNow) {
             if (monthSelected <= monthNow) {
-                if (daySelected < dayNow){
+                if (daySelected < dayNow) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    //On createDialog check what action user want to make
+    //On updateAction populate fields with data from item to update
+    private void createAction() {
+        setupPrioritySpinner();
+    }
+    private void updateAction(String title, String description, Long date) {
+        mTitle.setText(title);
+        mDescription.setText(description);
+        mDate.setDate(date);
+        mPriority.setVisibility(View.GONE);
+
     }
 
 

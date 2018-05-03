@@ -8,4 +8,5 @@
     <string name="no_title">Title can not be empty</string>
     <string name="no_description">Description can not be empty</string>
     <string name="wrong_date">Date can not be in past</string>
+    <string name="update_task">Update</string>
 </resources>

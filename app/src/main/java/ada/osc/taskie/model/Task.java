@@ -50,4 +50,20 @@ public class Task {
     public void setDate(Date mDate) {
         this.mDate = mDate;
     }
+
+    public void updateTaskPriority(Task task) {
+        switch (task.getPriority()) {
+            case 0:
+                task.setPriority(1);
+                break;
+            case 1:
+                task.setPriority(2);
+                break;
+            case 2:
+                task.setPriority(0);
+                break;
+        }
+    }
+
+
 }

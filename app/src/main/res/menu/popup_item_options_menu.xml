@@ -3,11 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ada.osc.taskie.ui.TaskActivity" >
     <item
-        android:id="@+id/one"
+        android:id="@+id/menu_check_as_done"
         android:title="Check as done"/>
 
     <item
-        android:id="@+id/two"
+        android:id="@+id/menu_update"
         android:title="Update"/>
 
 </menu>

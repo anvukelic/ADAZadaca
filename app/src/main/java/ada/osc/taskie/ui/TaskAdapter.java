@@ -52,17 +52,16 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         holder.mTitle.setText(t.getTitle());
         holder.mDescription.setText(t.getDescription());
         switch (t.getPriority()) {
-            case 1:
+            case 0:
                 holder.mPrioritiy.setImageResource(R.drawable.shape_low_priority);
                 break;
-            case 2:
+            case 1:
                 holder.mPrioritiy.setImageResource(R.drawable.shape_medium_priority);
                 break;
-            default:
+            case 2:
                 holder.mPrioritiy.setImageResource(R.drawable.shape_high_priority);
         }
         holder.mDate.setText(formatDate(t.getDate()));
-
     }
 
     @Override
@@ -82,23 +81,21 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         @BindView(R.id.textview_recyclerview_description) TextView mDescription;
         @BindView(R.id.textview_recyclerview_date) TextView mDate;
         @BindView(R.id.imageview_recyclerview_priority) ImageView mPrioritiy;
-        @BindView(R.id.imageview_recyclerview_item_menu) ImageView mItemMenu;
+        @BindView(R.id.textview_recyclerview_item_menu) TextView mItemMenu;
 
         public TaskViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }
-        @OnClick(R.id.imageview_recyclerview_item_menu)
-        public void onTaskOptionsClick(){
-            mListener.onClick(mTasks.get(getAdapterPosition()),R.id.imageview_recyclerview_item_menu);
+        @OnClick(R.id.textview_recyclerview_item_menu)
+        public void onTaskOptionsClick(View view){
+            mListener.onClick(mTasks.get(getAdapterPosition()),R.id.textview_recyclerview_item_menu,view);
         }
         @OnClick(R.id.imageview_recyclerview_priority)
         public void changePriorityOnClick(){
-            mListener.onClick(mTasks.get(getAdapterPosition()),R.id.imageview_recyclerview_priority);
+            mListener.onClick(mTasks.get(getAdapterPosition()),R.id.imageview_recyclerview_priority, null);
         }
     }
-
-
 
     private String formatDate(Date date) {
         SimpleDateFormat sd = new SimpleDateFormat("dd.\nMMM");
@@ -107,27 +104,3 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
 
 }
-
-
-/*mItemMenu.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    PopupMenu popupMenu = new PopupMenu(view.getContext(), mItemMenu);
-                    popupMenu.getMenuInflater().inflate(R.menu.popup_item_options_menu, popupMenu.getMenu());
-                    popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-                        public boolean onMenuItemClick(MenuItem item) {
-                            switch(item.getItemId()){
-                                case 0:
-                                    mTasks.remove(getAdapterPosition());
-                                    break;
-                                case 1:
-                                    break;
-                                default:
-
-                            }
-                            return true;
-                        }
-                    });
-                    popupMenu.show();
-                }
-            });*/

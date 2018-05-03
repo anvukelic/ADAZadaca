@@ -49,15 +49,17 @@
             android:layout_height="wrap_content"
             android:hint="Lorem ipsum is simply dummy text" />
     </LinearLayout>
-    <ImageView
-        android:id="@+id/imageview_recyclerview_item_menu"
+    <TextView
+        android:id="@+id/textview_recyclerview_item_menu"
+        android:paddingEnd="16dp"
+        android:paddingStart="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:src="@drawable/ic_menu_black_24dp"
         android:layout_alignParentEnd="true"
         android:layout_centerInParent="true"
+        android:text="&#8942;"
         android:clickable="true"
-        android:focusable="true" />
-
+        android:focusable="true"
+        android:textAppearance="?android:textAppearanceLarge" />
 
 </RelativeLayout>
