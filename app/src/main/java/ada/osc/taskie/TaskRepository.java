@@ -1,7 +1,5 @@
 package ada.osc.taskie;
 
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import ada.osc.taskie.model.Task;
@@ -37,10 +35,14 @@ public class TaskRepository {
 
     public void deleteAll(){mDatabase.deleteAll();}
 
+    public void changeTaskStatus(Task task){
+        mDatabase.changeTaskStatus(task);
+    }
+
     public void updateTaskPriority(Task task){mDatabase.updateTaskPriorty(task);}
 
-    public List<Task> getTasks(int sortType){
-        return mDatabase.getTasks(sortType);
+    public List<Task> getTasks(int sortType, int filterStatus){
+        return mDatabase.getTasks(sortType, filterStatus);
     }
 
 }

@@ -1,16 +1,11 @@
 package ada.osc.taskie.ui;
 
-import android.media.Image;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -35,6 +30,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         mListener = listener;
         mTasks = new ArrayList<>();
     }
+
     public void refreshData(List<Task> tasks) {
         mTasks.clear();
         mTasks.addAll(tasks);
@@ -77,23 +73,31 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
     public class TaskViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.textview_recyclerview_title) TextView mTitle;
-        @BindView(R.id.textview_recyclerview_description) TextView mDescription;
-        @BindView(R.id.textview_recyclerview_date) TextView mDate;
-        @BindView(R.id.imageview_recyclerview_priority) ImageView mPrioritiy;
-        @BindView(R.id.textview_recyclerview_item_menu) TextView mItemMenu;
+        @BindView(R.id.textview_recyclerview_title)
+        TextView mTitle;
+        @BindView(R.id.textview_recyclerview_description)
+        TextView mDescription;
+        @BindView(R.id.textview_recyclerview_date)
+        TextView mDate;
+        @BindView(R.id.imageview_recyclerview_priority)
+        ImageView mPrioritiy;
+
+        @BindView(R.id.textview_recyclerview_item_menu)
+        TextView mItemMenu;
 
         public TaskViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }
+
         @OnClick(R.id.textview_recyclerview_item_menu)
-        public void onTaskOptionsClick(View view){
-            mListener.onClick(mTasks.get(getAdapterPosition()),R.id.textview_recyclerview_item_menu,view);
+        public void onTaskOptionsClick(View view) {
+            mListener.onClick(mTasks.get(getAdapterPosition()), R.id.textview_recyclerview_item_menu, view);
         }
+
         @OnClick(R.id.imageview_recyclerview_priority)
-        public void changePriorityOnClick(){
-            mListener.onClick(mTasks.get(getAdapterPosition()),R.id.imageview_recyclerview_priority, null);
+        public void changePriorityOnClick() {
+            mListener.onClick(mTasks.get(getAdapterPosition()), R.id.imageview_recyclerview_priority, null);
         }
     }
 

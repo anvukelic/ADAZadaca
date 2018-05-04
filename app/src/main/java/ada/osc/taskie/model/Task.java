@@ -11,12 +11,14 @@ public class Task {
     private String mDescription;
     private int mPriority;
     private Date mDate;
+    private boolean mDone;
 
     public Task(String mTitle, String mDescription, int mPriority, Date mDate) {
         this.mTitle = mTitle;
         this.mDescription = mDescription;
         this.mPriority = mPriority;
         this.mDate = mDate;
+        mDone = false;
     }
 
     public String getTitle() {
@@ -49,6 +51,14 @@ public class Task {
 
     public void setDate(Date mDate) {
         this.mDate = mDate;
+    }
+
+    public boolean isDone() {
+        return mDone;
+    }
+
+    public void setDone(boolean Status) {
+        this.mDone = Status;
     }
 
     public void updateTaskPriority(Task task) {

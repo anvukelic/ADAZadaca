@@ -45,7 +45,8 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
 
     private TaskRepository mTaskRepository = TaskRepository.getInstance();
 
-    private int mSortType;
+    private int mSortPriorityType;
+    private int mFilterStatusType = 0;
 
     @BindView(R.id.spinner_task_priority)
     Spinner mFilter;
@@ -65,7 +66,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
                     break;
                 default:
             }
-            mAdapter.refreshData(mTaskRepository.getTasks(mSortType));
+            mAdapter.refreshData(getTasksFromRepository());
 
         }
 
@@ -86,10 +87,12 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         setupPrioritySpinner();
         getTasksFromSharedPreferences();
         setupFloatingButton();
+
     }
+
     /*
-    *Methods called in onCreate
-    */
+     *Methods called in onCreate
+     */
     //Setup floating button to showTaskDialogFragment(create action)
     private void setupFloatingButton() {
         FloatingActionButton fab = findViewById(R.id.fab);
@@ -100,6 +103,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
             }
         });
     }
+
     private void setUpRecyclerView() {
         mAdapter = new TaskAdapter(mListener);
         RecyclerView.LayoutManager llm = new LinearLayoutManager(getApplicationContext());
@@ -107,6 +111,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
     }
+
     //Get task list from SharedPreferences
     private void getTasksFromSharedPreferences() {
         Gson gson = new Gson();
@@ -128,7 +133,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     //Save list as json in SharedPreferences
     private void putTasksInSharedPreferences() {
         Gson gson = new Gson();
-        String json = gson.toJson(mTaskRepository.getTasks(FakeDatabase.FILTER_ALL));
+        String json = gson.toJson(mTaskRepository.getTasks(FakeDatabase.SORT_ALL, FakeDatabase.FILTER_ALL));
         System.out.println(json);
         getSharedPreferences(DB_PREFS, MODE_PRIVATE).edit().putString(TASK_JSON, json).apply();
     }
@@ -167,8 +172,8 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         mFilter.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                mSortType = mFilter.getSelectedItemPosition();
-                mAdapter.refreshData(mTaskRepository.getTasks(mSortType));
+                mSortPriorityType = mFilter.getSelectedItemPosition();
+                mAdapter.refreshData(getTasksFromRepository());
             }
 
             @Override
@@ -186,12 +191,12 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
             Task task = new Task(title, description, priority, date);
             mTaskRepository.save(task);
         } else {
-            Task task = mTaskRepository.getTasks(mSortType).get(taskId);
+            Task task = getTasksFromRepository().get(taskId);
             task.setTitle(title);
             task.setDescription(description);
             task.setDate(date);
         }
-        mAdapter.refreshData(mTaskRepository.getTasks(mSortType));
+        mAdapter.refreshData(getTasksFromRepository());
     }
 
     //On item options button click pop up window
@@ -200,16 +205,25 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     private void showPopUp(final Task task, View v) {
         PopupMenu popup = new PopupMenu(v.getContext(), v);
         popup.inflate(R.menu.popup_item_options_menu);
+        if(task.isDone()){
+            popup.getMenu().getItem(1).setTitle(R.string.check_as_not_done);
+        } else {
+            popup.getMenu().getItem(1).setTitle(R.string.check_as_done);
+        }
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             @Override
             public boolean onMenuItemClick(MenuItem item) {
                 switch (item.getItemId()) {
-                    case R.id.menu_check_as_done:
+                    case R.id.menu_delete_task:
                         mTaskRepository.delete(task);
-                        mAdapter.refreshData(mTaskRepository.getTasks(mSortType));
+                        mAdapter.refreshData(getTasksFromRepository());
+                        break;
+                    case R.id.menu_check_as_done:
+                        mTaskRepository.changeTaskStatus(task);
+                        mAdapter.refreshData(getTasksFromRepository());
                         break;
                     case R.id.menu_update:
-                        int taskId = mTaskRepository.getTasks(mSortType).indexOf(task);
+                        int taskId = getTasksFromRepository().indexOf(task);
                         showTaskDialogFragment(taskId, UPDATE_TASK_ACTION, task.getTitle(), task.getDescription(), task.getDate());
                         break;
                 }
@@ -235,12 +249,40 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
+        switch (id) {
+            case R.id.action_settings:
+                return true;
+            case R.id.toolbar_task_status:
+                switch (item.getTitle().toString()) {
+                    case "All tasks":
+                        item.setTitle(R.string.tasks_finished);
+                        mFilterStatusType = 1;
+                        mAdapter.refreshData(getTasksFromRepository());
+                        break;
+                    case "Done":
+                        item.setTitle(R.string.tasks_not_finished);
+                        mFilterStatusType = 2;
+                        mAdapter.refreshData(getTasksFromRepository());
+                        break;
+                    case "Not done":
+                        item.setTitle(R.string.all_tasks);
+                        mFilterStatusType = 0;
+                        mAdapter.refreshData(getTasksFromRepository());
+                        break;
+                }
+                break;
+        }
+
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_settings) {
             return true;
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private List<Task> getTasksFromRepository() {
+        return mTaskRepository.getTasks(mSortPriorityType, mFilterStatusType);
     }
 
 

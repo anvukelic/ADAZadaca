@@ -3,11 +3,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ada.osc.taskie.ui.TaskActivity" >
     <item
+        android:id="@+id/menu_delete_task"
+        android:title="@string/action_remove"/>
+    <item
         android:id="@+id/menu_check_as_done"
-        android:title="Check as done"/>
+        android:title="@string/check_as_done"/>
 
     <item
         android:id="@+id/menu_update"
-        android:title="Update"/>
+        android:title="@string/action_update"/>
 
 </menu>

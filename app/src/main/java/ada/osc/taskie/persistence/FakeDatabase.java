@@ -12,9 +12,12 @@ import ada.osc.taskie.model.Task;
  */
 public class FakeDatabase {
 
+    public static final int SORT_ALL = 0;
+    public static final int SORT_ASC = 1;
+    public static final int SORT_DESC = 2;
     public static final int FILTER_ALL = 0;
-    public static final int FILTER_ASC = 1;
-    public static final int FILTER_DESC = 2;
+    public static final int FILTER_DONE = 1;
+    public static final int FILTER_NOT_DONE = 2;
 
     List<Task> mTasks = new ArrayList<>();
 
@@ -26,19 +29,49 @@ public class FakeDatabase {
         mTasks.remove(task);
     }
 
-    public void deleteAll(){mTasks.removeAll(mTasks);}
+    public void deleteAll() {
+        mTasks.removeAll(mTasks);
+    }
+
+    public void changeTaskStatus(Task task){
+        task.setDone(!task.isDone());
+    }
 
     public void updateTaskPriorty(Task task) {
         task.updateTaskPriority(task);
     }
 
-    public List<Task> getTasks(int sortType) {
+    public List<Task> getTasksSortedByStatus(int filterStatus) {
         List<Task> sortedList = new ArrayList<>();
-        sortedList.addAll(mTasks);
+        List<Task> filteredList = new ArrayList<>(mTasks);
+        switch (filterStatus) {
+            case 0:
+                return mTasks;
+            case 1:
+                for (Task task : mTasks) {
+                    if (!task.isDone()) {
+                        sortedList.add(task);
+                    }
+                }
+                break;
+            case 2:
+                for (Task task : mTasks) {
+                    if (task.isDone()) {
+                        sortedList.add(task);
+                    }
+                }
+                break;
+        }
+        filteredList.removeAll(sortedList);
+        return filteredList;
+    }
+
+    public List<Task> getTasks(int sortType, int filterStatus) {
+        List<Task> sortedList = new ArrayList<>(getTasksSortedByStatus(filterStatus));
         switch (sortType) {
-            case FILTER_ALL:
-                return new ArrayList<>(mTasks);
-            case FILTER_ASC:
+            case SORT_ALL:
+                return new ArrayList<>(getTasksSortedByStatus(filterStatus));
+            case SORT_ASC:
                 Collections.sort(sortedList, new Comparator<Task>() {
                     @Override
                     public int compare(Task t1, Task t2) {
@@ -46,7 +79,7 @@ public class FakeDatabase {
                     }
                 });
                 break;
-            case FILTER_DESC:
+            case SORT_DESC:
                 Collections.sort(sortedList, new Comparator<Task>() {
                     @Override
                     public int compare(Task t1, Task t2) {

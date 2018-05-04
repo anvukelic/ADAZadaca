@@ -9,9 +9,12 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.ArrayAdapter;
 import android.widget.CalendarView;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -48,7 +51,6 @@ public class NewTaskDialogFragment extends DialogFragment {
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_creating_task, null);
-
         ButterKnife.bind(this, view);
         if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
             createAction();
@@ -61,6 +63,8 @@ public class NewTaskDialogFragment extends DialogFragment {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
                 selectedDate.set(year, month, dayOfMonth);
+                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mTitle.getWindowToken(), 0);
             }
         });
         return createAlertDialog(view);
@@ -82,9 +86,15 @@ public class NewTaskDialogFragment extends DialogFragment {
             @Override
             public void onClick(View v) {
                 Boolean wantToCloseDialog = false;
-                if (mTitle.getText().toString().trim().length() == 0 || mTitle.getText().toString().isEmpty()) {
+                String title = mTitle.getText().toString();
+                String description = mTitle.getText().toString();
+                if(title.trim().length()>30){
+                    Toast.makeText(getActivity(), R.string.too_long_title,Toast.LENGTH_SHORT).show();
+                } else if(description.trim().length()>150){
+                    Toast.makeText(getActivity(), R.string.too_long_description,Toast.LENGTH_SHORT).show();
+                } else  if (title.trim().length() == 0 || title.isEmpty()) {
                     Toast.makeText(getActivity(), R.string.no_title, Toast.LENGTH_SHORT).show();
-                } else if (mDescription.getText().toString().trim().length() == 0 || mDescription.getText().toString().isEmpty()) {
+                } else if (description.trim().length() == 0 || description.isEmpty()) {
                     Toast.makeText(getActivity(), R.string.no_description, Toast.LENGTH_SHORT).show();
                 } else if (!isValidDate()) {
                     Toast.makeText(getActivity(), R.string.wrong_date, Toast.LENGTH_SHORT).show();
@@ -144,7 +154,7 @@ public class NewTaskDialogFragment extends DialogFragment {
     //Setup priority spinner to show strings from R.array.priority_level_list
     public void setupPrioritySpinner() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
-                R.array.prirority_sort_type_list, android.R.layout.simple_spinner_item);
+                R.array.prirority_level_list, android.R.layout.simple_spinner_item);
 
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mPriority.setAdapter(adapter);
