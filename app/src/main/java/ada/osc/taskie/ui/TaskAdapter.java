@@ -18,6 +18,7 @@ import ada.osc.taskie.model.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import butterknife.OnLongClick;
 
 /**
  * Created by avukelic on 28-Apr-18.
@@ -69,7 +70,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public TaskViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_task, parent, false);
-        return new TaskViewHolder(v);
+        return new TaskViewHolder(v, mListener);
     }
 
     public class TaskViewHolder extends RecyclerView.ViewHolder {
@@ -82,22 +83,24 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         @BindView(R.id.imageview_recyclerview_priority)
         ImageView mPrioritiy;
 
-        @BindView(R.id.textview_recyclerview_item_menu)
-        TextView mItemMenu;
 
-        public TaskViewHolder(View view) {
+        public TaskViewHolder(View view, TaskClickListener taskClickListener) {
             super(view);
             ButterKnife.bind(this, view);
         }
 
-        @OnClick(R.id.textview_recyclerview_item_menu)
-        public void onTaskOptionsClick(View view) {
-            mListener.onClick(mTasks.get(getAdapterPosition()), R.id.textview_recyclerview_item_menu, view);
+        @OnClick
+        public void onTaskClick(){
+            mListener.onClick(mTasks.get(getAdapterPosition()));
+        }
+        @OnLongClick
+        public boolean onLongClick(){
+            return mListener.onLongClick(mTasks.get(getAdapterPosition()));
         }
 
         @OnClick(R.id.imageview_recyclerview_priority)
         public void changePriorityOnClick() {
-            mListener.onClick(mTasks.get(getAdapterPosition()), R.id.imageview_recyclerview_priority, null);
+            mListener.onPriorityChangeClick(mTasks.get(getAdapterPosition()));
         }
     }
 

@@ -15,11 +15,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.PopupMenu;
 import android.widget.Spinner;
+import android.widget.Toast;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.DeleteBuilder;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -33,7 +35,7 @@ import ada.osc.taskie.model.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class TaskActivity extends AppCompatActivity implements NewTaskDialogFragment.OnAddListener {
+public class TaskActivity extends AppCompatActivity implements NewTaskDialogFragment.OnTaskChangeListener {
 
     public static final String CREATE_TASK_TAG = "createTaskDialog";
     public static final int CREATE_TASK_ACTION = 10;
@@ -57,23 +59,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
 
     private DatabaseHelper databaseHelper = null;
     private Dao<Task, String> taskDao;
-
-    TaskClickListener mListener = new TaskClickListener() {
-        @Override
-        public void onClick(final Task task, int itemId, View view) {
-            switch (itemId) {
-                case R.id.textview_recyclerview_item_menu:
-                    showPopUp(task, view);
-                    break;
-                case R.id.imageview_recyclerview_priority:
-                    break;
-                default:
-            }
-            mAdapter.refreshData(getTasksFromDb());
-
-        }
-
-    };
+    TaskClickListener mListener;
 
 
     @Override
@@ -88,13 +74,11 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         } catch (SQLException e) {
             e.printStackTrace();
         }
+        setUpTaskClickListener();
         setUpRecyclerView();
         setupPrioritySpinner();
         setupFloatingButton();
-
     }
-
-
     /*
      *Methods called in onCreate
      */
@@ -104,11 +88,10 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showTaskDialogFragment(CREATE_TASK_ACTION);
+                showTaskDialogFragment(CREATE_TASK_ACTION, null);
             }
         });
     }
-
     private void setUpRecyclerView() {
         mAdapter = new TaskAdapter(mListener);
         RecyclerView.LayoutManager llm = new LinearLayoutManager(getApplicationContext());
@@ -116,7 +99,52 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.setAdapter(mAdapter);
     }
+    private void setUpTaskClickListener(){
+        mListener = new TaskClickListener() {
+            @Override
+            public void onClick(Task task) {
 
+                showTaskDialogFragment(UPDATE_TASK_ACTION, task.getId());
+                mAdapter.refreshData(getTasksFromDb());
+            }
+            @Override
+            public boolean onLongClick(Task task) {
+                DeleteBuilder<Task, String> deleteBuilder = taskDao.deleteBuilder();
+                try {
+                    deleteBuilder.where().eq("id",task.getId());
+                    deleteBuilder.delete();
+                    mAdapter.refreshData(getTasksFromDb());
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                return true;
+            }
+            @Override
+            public void onPriorityChangeClick(Task task) {
+                QueryBuilder<Task,String> queryBuilder = taskDao.queryBuilder();
+                try {
+                    UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
+                    updateBuilder.where().eq("id",task.getId());
+                    switch (task.getPriority()) {
+                        case 0:
+                            updateBuilder.updateColumnValue("priority",1);
+                            break;
+                        case 1:
+                            updateBuilder.updateColumnValue("priority",2);
+                            break;
+                        case 2:
+                            updateBuilder.updateColumnValue("priority",0);
+                            break;
+                    }
+                    updateBuilder.update();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+                mAdapter.refreshData(getTasksFromDb());
+            }
+
+        };
+    }
 
     // This is how, DatabaseHelper can be initialized for future use
     private DatabaseHelper getHelper() {
@@ -141,10 +169,13 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
 
     //Show task dialog
     //Two different calls: create and update
-    private void showTaskDialogFragment(int action) {
+    private void showTaskDialogFragment(int action, String taskId) {
         DialogFragment createTaskDialogFragment = new NewTaskDialogFragment();
         Bundle args = new Bundle();
         args.putInt("action", action);
+        if(action == UPDATE_TASK_ACTION){
+            args.putString("taskId", taskId);
+        }
         createTaskDialogFragment.setArguments(args);
         createTaskDialogFragment.show(this.getFragmentManager(), CREATE_TASK_TAG);
     }
@@ -167,47 +198,6 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
                 return;
             }
         });
-    }
-
-    //On item options button click pop up window
-    //Check as done option
-    //showTaskDialogFragment(update action)
-    private void showPopUp(final Task task, View v) {
-        PopupMenu popup = new PopupMenu(v.getContext(), v);
-        popup.inflate(R.menu.popup_item_options_menu);
-        if (task.isDone()) {
-            popup.getMenu().getItem(1).setTitle(R.string.check_as_not_done);
-        } else {
-            popup.getMenu().getItem(1).setTitle(R.string.check_as_done);
-        }
-        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-            @Override
-            public boolean onMenuItemClick(MenuItem item) {
-                switch (item.getItemId()) {
-                    case R.id.menu_delete_task:
-                        try {
-                            DeleteBuilder<Task, String> deleteBuilder = taskDao.deleteBuilder();
-                            deleteBuilder.where().eq("id", task.getId());
-                            deleteBuilder.delete();
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                        mAdapter.refreshData(getTasksFromDb());
-                        break;
-                    case R.id.menu_check_as_done:
-                        //mTaskRepository.changeTaskStatus(task);
-                        mAdapter.refreshData(getTasksFromDb());
-                        break;
-                    case R.id.menu_update:
-                        int taskId = getTasksFromDb().indexOf(task);
-                        showTaskDialogFragment(UPDATE_TASK_ACTION);
-                        break;
-                }
-                return false;
-            }
-        });
-        //displaying the popup
-        popup.show();
     }
 
     //Toolbar methods
@@ -255,7 +245,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     }
 
     @Override
-    public void onTaskAdd() {
+    public void onTaskChange(int action) {
         mAdapter.refreshData(getTasksFromDb());
     }
 

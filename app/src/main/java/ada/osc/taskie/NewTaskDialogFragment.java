@@ -18,6 +18,8 @@ import android.widget.Toast;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -33,11 +35,13 @@ import butterknife.ButterKnife;
  */
 public class NewTaskDialogFragment extends DialogFragment {
 
-    public interface OnAddListener {
-        void onTaskAdd();
+    public interface OnTaskChangeListener {
+        void onTaskChange(int action);
     }
 
-    public OnAddListener mOnAddListener;
+    private Task taskForUpdate;
+
+    public OnTaskChangeListener mOnAddListener;
 
     private DatabaseHelper databaseHelper = null;
 
@@ -60,7 +64,7 @@ public class NewTaskDialogFragment extends DialogFragment {
         if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
             createAction();
         } else {
-            updateAction(getArguments().getString("title"), getArguments().getString("description"), getArguments().getLong("date"));
+            updateAction(getArguments().getString("taskId"));
         }
         selectedDate = Calendar.getInstance();
         selectedDate.setTimeInMillis(mDate.getDate());
@@ -92,17 +96,43 @@ public class NewTaskDialogFragment extends DialogFragment {
                 String title = mTitle.getText().toString();
                 String description = mTitle.getText().toString();
                 wantToCloseDialog = !checkFields(title, description);
+                Dao<Task, String> taskDao = null;
+                try {
+                    taskDao = getHelper().getTaskDao();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
                 if (wantToCloseDialog) {
-                    try {
-                        Dao<Task, String> taskDao = getHelper().getTaskDao();
-                        taskDao.create(new Task(mTitle.getText().toString(),
-                                mDescription.getText().toString(),
-                                mPriority.getSelectedItemPosition(),
-                                selectedDate.getTime()));
-                        mOnAddListener.onTaskAdd();
-                    } catch (SQLException e) {
-                        e.printStackTrace();
+                    if(getArguments().getInt("action")==TaskActivity.CREATE_TASK_ACTION){
+                        try {
+
+                            taskDao.create(new Task(
+                                    title,
+                                    description,
+                                    mPriority.getSelectedItemPosition(),
+                                    selectedDate.getTime()
+                            ));
+                            mOnAddListener.onTaskChange(getArguments().getInt("action"));
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+
+                        try {
+                            UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
+                            updateBuilder.where().eq("id",taskForUpdate.getId());
+                            updateBuilder.updateColumnValue("title",title);
+                            updateBuilder.updateColumnValue("description",description);
+                            updateBuilder.updateColumnValue("priority",mPriority.getSelectedItemPosition());
+                            updateBuilder.updateColumnValue("date",selectedDate.getTime());
+                            updateBuilder.update();
+
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+
                     }
+
                     getDialog().dismiss();
                 }
             }
@@ -193,7 +223,7 @@ public class NewTaskDialogFragment extends DialogFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            mOnAddListener = (OnAddListener) getActivity();
+            mOnAddListener = (OnTaskChangeListener) getActivity();
         } catch (ClassCastException e) {
         }
     }
@@ -204,12 +234,20 @@ public class NewTaskDialogFragment extends DialogFragment {
         setupPrioritySpinner();
     }
 
-    private void updateAction(String title, String description, Long date) {
-        mTitle.setText(title);
-        mDescription.setText(description);
-        mDate.setDate(date);
-        mPriority.setVisibility(View.GONE);
-
+    private void updateAction(String taskId) {
+        Dao<Task, String> taskDao;
+        setupPrioritySpinner();
+        try {
+            taskDao = getHelper().getTaskDao();
+            QueryBuilder<Task,String> queryBuilder = taskDao.queryBuilder();
+            taskForUpdate = taskDao.queryForFirst(queryBuilder.where().eq("id",taskId).prepare());
+            mTitle.setText(taskForUpdate.getTitle());
+            mDescription.setText(taskForUpdate.getDescription());
+            mDate.setDate(taskForUpdate.getDate().getTime());
+            mPriority.setSelection(taskForUpdate.getPriority());
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -230,4 +268,5 @@ public class NewTaskDialogFragment extends DialogFragment {
         }
         return databaseHelper;
     }
+
 }
