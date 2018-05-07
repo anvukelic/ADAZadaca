@@ -13,23 +13,19 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.PopupMenu;
+import android.widget.CompoundButton;
 import android.widget.Spinner;
-import android.widget.Toast;
+import android.widget.Switch;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.stmt.DeleteBuilder;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.UpdateBuilder;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
 import java.util.List;
 
-import ada.osc.taskie.NewTaskDialogFragment;
+import ada.osc.taskie.TaskHelper;
 import ada.osc.taskie.R;
 import ada.osc.taskie.TaskClickListener;
+import ada.osc.taskie.TaskDao;
 import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Task;
 import butterknife.BindView;
@@ -40,13 +36,6 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     public static final String CREATE_TASK_TAG = "createTaskDialog";
     public static final int CREATE_TASK_ACTION = 10;
     public static final int UPDATE_TASK_ACTION = 20;
-    public static final int SORT_ALL = 0;
-    public static final int SORT_ASC = 1;
-    public static final int SORT_DESC = 2;
-    public static final int FILTER_ALL = 0;
-    public static final int FILTER_DONE = 1;
-    public static final int FILTER_NOT_DONE = 2;
-
 
     private int mSortPriorityType;
     private int mFilterStatusType = 0;
@@ -61,7 +50,9 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     private Dao<Task, String> taskDao;
     TaskClickListener mListener;
 
-
+    /**
+     * Lifecycle methods
+     */
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -69,89 +60,12 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
-        try {
-            taskDao = getHelper().getTaskDao();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        taskDao = TaskDao.getInstance(this);
         setUpTaskClickListener();
         setUpRecyclerView();
         setupPrioritySpinner();
         setupFloatingButton();
-    }
-    /*
-     *Methods called in onCreate
-     */
-    //Setup floating button to showTaskDialogFragment(create action)
-    private void setupFloatingButton() {
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                showTaskDialogFragment(CREATE_TASK_ACTION, null);
-            }
-        });
-    }
-    private void setUpRecyclerView() {
-        mAdapter = new TaskAdapter(mListener);
-        RecyclerView.LayoutManager llm = new LinearLayoutManager(getApplicationContext());
-        mRecyclerView.setLayoutManager(llm);
-        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mRecyclerView.setAdapter(mAdapter);
-    }
-    private void setUpTaskClickListener(){
-        mListener = new TaskClickListener() {
-            @Override
-            public void onClick(Task task) {
 
-                showTaskDialogFragment(UPDATE_TASK_ACTION, task.getId());
-                mAdapter.refreshData(getTasksFromDb());
-            }
-            @Override
-            public boolean onLongClick(Task task) {
-                DeleteBuilder<Task, String> deleteBuilder = taskDao.deleteBuilder();
-                try {
-                    deleteBuilder.where().eq("id",task.getId());
-                    deleteBuilder.delete();
-                    mAdapter.refreshData(getTasksFromDb());
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                return true;
-            }
-            @Override
-            public void onPriorityChangeClick(Task task) {
-                QueryBuilder<Task,String> queryBuilder = taskDao.queryBuilder();
-                try {
-                    UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
-                    updateBuilder.where().eq("id",task.getId());
-                    switch (task.getPriority()) {
-                        case 0:
-                            updateBuilder.updateColumnValue("priority",1);
-                            break;
-                        case 1:
-                            updateBuilder.updateColumnValue("priority",2);
-                            break;
-                        case 2:
-                            updateBuilder.updateColumnValue("priority",0);
-                            break;
-                    }
-                    updateBuilder.update();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                mAdapter.refreshData(getTasksFromDb());
-            }
-
-        };
-    }
-
-    // This is how, DatabaseHelper can be initialized for future use
-    private DatabaseHelper getHelper() {
-        if (databaseHelper == null) {
-            databaseHelper = OpenHelperManager.getHelper(this, DatabaseHelper.class);
-        }
-        return databaseHelper;
     }
 
     @Override
@@ -167,17 +81,52 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         }
     }
 
-    //Show task dialog
-    //Two different calls: create and update
-    private void showTaskDialogFragment(int action, String taskId) {
-        DialogFragment createTaskDialogFragment = new NewTaskDialogFragment();
-        Bundle args = new Bundle();
-        args.putInt("action", action);
-        if(action == UPDATE_TASK_ACTION){
-            args.putString("taskId", taskId);
-        }
-        createTaskDialogFragment.setArguments(args);
-        createTaskDialogFragment.show(this.getFragmentManager(), CREATE_TASK_TAG);
+    //Setup floating button to showTaskDialogFragment(create action)
+    private void setupFloatingButton() {
+        FloatingActionButton fab = findViewById(R.id.fab);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showTaskDialogFragment(CREATE_TASK_ACTION, null);
+            }
+        });
+    }
+
+    private void setUpRecyclerView() {
+        mAdapter = new TaskAdapter(mListener);
+        RecyclerView.LayoutManager llm = new LinearLayoutManager(getApplicationContext());
+        mRecyclerView.setLayoutManager(llm);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.setAdapter(mAdapter);
+    }
+
+    private void setUpTaskClickListener() {
+        mListener = new TaskClickListener() {
+            @Override
+            public void onClick(Task task) {
+                showTaskDialogFragment(UPDATE_TASK_ACTION, task.getId());
+                mAdapter.refreshData(getTasks());
+            }
+
+            @Override
+            public boolean onLongClick(Task task) {
+                TaskHelper.deleteTask(task, TaskActivity.this, taskDao);
+                mAdapter.refreshData(getTasks());
+                return true;
+            }
+
+            @Override
+            public void onPriorityChangeClick(Task task) {
+                TaskHelper.updatePriorityOnClick(task,taskDao);
+                mAdapter.refreshData(getTasks());
+            }
+
+            @Override
+            public void onStatusSwitchChange(Task task) {
+                TaskHelper.updateStatusOnSwitchChange(task,taskDao);
+            }
+
+        };
     }
 
     //Setup priority spinner to show strings from R.array.priority_sort_type_list
@@ -190,14 +139,26 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 mSortPriorityType = mSortType.getSelectedItemPosition();
-                mAdapter.refreshData(getTasksFromDb());
+                mAdapter.refreshData(getTasks());
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                return;
             }
         });
+    }
+
+    //Show task dialog
+    //Two different calls: create and update
+    private void showTaskDialogFragment(int action, String taskId) {
+        DialogFragment createTaskDialogFragment = new NewTaskDialogFragment();
+        Bundle args = new Bundle();
+        args.putInt("action", action);
+        if (action == UPDATE_TASK_ACTION) {
+            args.putString("taskId", taskId);
+        }
+        createTaskDialogFragment.setArguments(args);
+        createTaskDialogFragment.show(this.getFragmentManager(), CREATE_TASK_TAG);
     }
 
     //Toolbar methods
@@ -222,66 +183,35 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
                     case "All tasks":
                         item.setTitle(R.string.tasks_finished);
                         mFilterStatusType = 1;
-                        mAdapter.refreshData(getTasksFromDb());
+                        mAdapter.refreshData(getTasks());
                         break;
                     case "Done":
                         item.setTitle(R.string.tasks_not_finished);
                         mFilterStatusType = 2;
-                        mAdapter.refreshData(getTasksFromDb());
+                        mAdapter.refreshData(getTasks());
                         break;
                     case "Not done":
                         item.setTitle(R.string.all_tasks);
                         mFilterStatusType = 0;
-                        mAdapter.refreshData(getTasksFromDb());
+                        mAdapter.refreshData(getTasks());
                         break;
                 }
                 break;
         }
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
         return super.onOptionsItemSelected(item);
     }
 
+    //Called when NewTaskDialogFragment is close with positive button
     @Override
     public void onTaskChange(int action) {
-        mAdapter.refreshData(getTasksFromDb());
+        mAdapter.refreshData(getTasks());
     }
 
-    private List<Task> getTasksFromDb() {
-        QueryBuilder<Task, String> queryBuilder = taskDao.queryBuilder();
-        queryBuilder = sortTasksByPriority(queryBuilder);
-        return filterTasksByStatus(queryBuilder);
+    public List<Task> getTasks(){
+        return TaskHelper.getTasksFromDb(mFilterStatusType,mSortPriorityType,taskDao);
     }
 
-    private List<Task> filterTasksByStatus(QueryBuilder<Task, String> queryBuilder) {
-        try {
-            switch (mFilterStatusType) {
-                case FILTER_DONE:
-                    return queryBuilder.where().eq("status", true).query();
-                case SORT_DESC:
-                    return queryBuilder.where().eq("status", false).query();
-                default:
-                    return queryBuilder.query();
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return new ArrayList<>();
-    }
-
-    private QueryBuilder<Task, String> sortTasksByPriority(QueryBuilder<Task, String> queryBuilder) {
-        switch (mSortPriorityType) {
-            case SORT_ASC:
-                return queryBuilder.orderBy("priority", true);
-            case SORT_DESC:
-                return queryBuilder.orderBy("priority", false);
-            default:
-                return queryBuilder;
-        }
-
-    }
 
 
 }

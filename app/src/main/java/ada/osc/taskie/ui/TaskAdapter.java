@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.Switch;
 import android.widget.TextView;
 
 import java.text.SimpleDateFormat;
@@ -59,6 +60,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
                 holder.mPrioritiy.setImageResource(R.drawable.shape_high_priority);
         }
         holder.mDate.setText(formatDate(t.getDate()));
+        holder.mStatus.setChecked(t.isDone());
     }
 
     @Override
@@ -82,6 +84,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         TextView mDate;
         @BindView(R.id.imageview_recyclerview_priority)
         ImageView mPrioritiy;
+        @BindView(R.id.switch_recyclerview_status)
+        Switch mStatus;
 
 
         public TaskViewHolder(View view, TaskClickListener taskClickListener) {
@@ -101,6 +105,11 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         @OnClick(R.id.imageview_recyclerview_priority)
         public void changePriorityOnClick() {
             mListener.onPriorityChangeClick(mTasks.get(getAdapterPosition()));
+        }
+
+        @OnClick(R.id.switch_recyclerview_status)
+        public void changeStatusOnSwitch(){
+            mListener.onStatusSwitchChange(mTasks.get(getAdapterPosition()));
         }
     }
 

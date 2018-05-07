@@ -6,15 +6,13 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_margin="@dimen/screen_margin">
 
-
-
     <ImageView
         android:id="@+id/imageview_recyclerview_priority"
         android:layout_width="60dp"
         android:layout_height="60dp"
         android:layout_gravity="center_vertical"
         android:src="@drawable/shape_high_priority"
-        />
+        android:contentDescription="@string/task_priority" />
     <TextView
         android:id="@+id/textview_recyclerview_date"
         android:layout_width="wrap_content"
@@ -24,7 +22,7 @@
         android:layout_alignEnd="@id/imageview_recyclerview_priority"
         android:layout_alignBottom="@id/imageview_recyclerview_priority"
         android:gravity="center"
-        android:textColor="#FFF"
+        android:textColor="@color/colorTaskDate"
         android:textSize="12sp"
         android:textStyle="bold"
         android:text="26.Apr" />
@@ -32,7 +30,7 @@
     <LinearLayout
         android:id="@+id/linearlayout_text_container"
         android:layout_toEndOf="@+id/imageview_recyclerview_priority"
-        android:layout_toStartOf="@+id/textview_recyclerview_item_menu"
+        android:layout_toStartOf="@+id/switch_recyclerview_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
@@ -50,5 +48,14 @@
             android:layout_height="wrap_content"
             android:hint="Lorem ipsum is simply dummy text" />
     </LinearLayout>
+    <Switch
+        android:id="@+id/switch_recyclerview_status"
+        android:switchMinWidth="50dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:layout_centerInParent="true"
+        android:layout_alignParentEnd="true"
+        android:textOn="@string/done"
+        android:textOff="@string/not_done"/>
 
 </RelativeLayout>

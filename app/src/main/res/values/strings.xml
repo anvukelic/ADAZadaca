@@ -19,4 +19,7 @@
     <string name="action_remove">Remove task</string>
     <string name="too_long_title">Title can\'t be longer then 30 chars</string>
     <string name="too_long_description">Description can\'t be longer then 150 chars</string>
+    <string name="done">Done</string>
+    <string name="not_done">Not done</string>
+    <string name="task_priority">Task priority</string>
 </resources>

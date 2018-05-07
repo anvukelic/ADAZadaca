@@ -1,10 +1,11 @@
-package ada.osc.taskie;
+package ada.osc.taskie.ui;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -23,7 +24,10 @@ import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Date;
 
+import ada.osc.taskie.R;
+import ada.osc.taskie.TaskDao;
 import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Task;
 import ada.osc.taskie.ui.TaskActivity;
@@ -39,7 +43,11 @@ public class NewTaskDialogFragment extends DialogFragment {
         void onTaskChange(int action);
     }
 
+    public static final String TASK_PREFS = "TaskiePrefs";
+    public static final String PRIORITY_PREF = "priorityOnCreate";
+
     private Task taskForUpdate;
+    Dao<Task, String> taskDao;
 
     public OnTaskChangeListener mOnAddListener;
 
@@ -61,6 +69,7 @@ public class NewTaskDialogFragment extends DialogFragment {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_creating_task, null);
         ButterKnife.bind(this, view);
+        taskDao = TaskDao.getInstance(getActivity());
         if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
             createAction();
         } else {
@@ -73,88 +82,11 @@ public class NewTaskDialogFragment extends DialogFragment {
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
                 selectedDate.set(year, month, dayOfMonth);
                 InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+                assert imm != null;
                 imm.hideSoftInputFromWindow(mTitle.getWindowToken(), 0);
             }
         });
         return createAlertDialog(view);
-    }
-
-    //Build AlertDialog
-    //Override positive button to prevent closing DialogFragment when any field is empty
-    //Or date is before today
-    public AlertDialog createAlertDialog(View view) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-        builder.setView(view);
-        builder = createDialog(builder);
-        AlertDialog dialog = builder.create();
-        dialog.show();
-        //Override onClick to prevent closing DialogFragment
-        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Boolean wantToCloseDialog;
-                String title = mTitle.getText().toString();
-                String description = mTitle.getText().toString();
-                wantToCloseDialog = !checkFields(title, description);
-                Dao<Task, String> taskDao = null;
-                try {
-                    taskDao = getHelper().getTaskDao();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-                if (wantToCloseDialog) {
-                    if(getArguments().getInt("action")==TaskActivity.CREATE_TASK_ACTION){
-                        try {
-
-                            taskDao.create(new Task(
-                                    title,
-                                    description,
-                                    mPriority.getSelectedItemPosition(),
-                                    selectedDate.getTime()
-                            ));
-                            mOnAddListener.onTaskChange(getArguments().getInt("action"));
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-
-                        try {
-                            UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
-                            updateBuilder.where().eq("id",taskForUpdate.getId());
-                            updateBuilder.updateColumnValue("title",title);
-                            updateBuilder.updateColumnValue("description",description);
-                            updateBuilder.updateColumnValue("priority",mPriority.getSelectedItemPosition());
-                            updateBuilder.updateColumnValue("date",selectedDate.getTime());
-                            updateBuilder.update();
-
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-
-                    }
-
-                    getDialog().dismiss();
-                }
-            }
-        });
-        return dialog;
-    }
-
-    private Boolean checkFields(String title, String description) {
-        if (title.trim().length() > 30) {
-            Toast.makeText(getActivity(), R.string.too_long_title, Toast.LENGTH_SHORT).show();
-        } else if (description.trim().length() > 150) {
-            Toast.makeText(getActivity(), R.string.too_long_description, Toast.LENGTH_SHORT).show();
-        } else if (title.trim().length() == 0 || title.isEmpty()) {
-            Toast.makeText(getActivity(), R.string.no_title, Toast.LENGTH_SHORT).show();
-        } else if (description.trim().length() == 0 || description.isEmpty()) {
-            Toast.makeText(getActivity(), R.string.no_description, Toast.LENGTH_SHORT).show();
-        } else if (!isValidDate()) {
-            Toast.makeText(getActivity(), R.string.wrong_date, Toast.LENGTH_SHORT).show();
-        } else {
-            return false;
-        }
-        return true;
     }
 
     //Set title and set buttons on AlertDialogBuilder
@@ -189,13 +121,84 @@ public class NewTaskDialogFragment extends DialogFragment {
         return builder;
     }
 
+    //Build AlertDialog
+    //Override positive button to prevent closing DialogFragment when any field is empty
+    //Or date is before today
+    public AlertDialog createAlertDialog(View view) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+        builder.setView(view);
+        builder = createDialog(builder);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        //Override onClick to prevent closing DialogFragment
+        dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Boolean wantToCloseDialog;
+                String title = mTitle.getText().toString();
+                String description = mTitle.getText().toString();
+                int priority = mPriority.getSelectedItemPosition();
+                Date date = selectedDate.getTime();
+                wantToCloseDialog = !checkFields(title, description);
+                if (wantToCloseDialog) {
+                    if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
+                        try {
+                            taskDao.create(new Task(title, description, priority, date));
+                            mOnAddListener.onTaskChange(getArguments().getInt("action"));
+                        } catch (SQLException e) {
+                            e.printStackTrace();
+                        }
+                    } else {
+                        updateTask(taskForUpdate.getId(), title, description, priority, date);
+                    }
+                    getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE)
+                            .edit().putInt(PRIORITY_PREF, priority).apply();
+                    getDialog().dismiss();
+                }
+            }
+        });
+        return dialog;
+    }
+
+    private void updateTask(String taskId, String title, String description, int priority, Date date) {
+        try {
+            UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
+            updateBuilder.where().eq("id", taskId);
+            updateBuilder.updateColumnValue("title", title);
+            updateBuilder.updateColumnValue("description", description);
+            updateBuilder.updateColumnValue("priority", priority);
+            updateBuilder.updateColumnValue("date", date);
+            updateBuilder.update();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    //Check if all fields are populated
+    private Boolean checkFields(String title, String description) {
+        if (title.trim().length() > 30) {
+            Toast.makeText(getActivity(), R.string.too_long_title, Toast.LENGTH_SHORT).show();
+        } else if (description.trim().length() > 150) {
+            Toast.makeText(getActivity(), R.string.too_long_description, Toast.LENGTH_SHORT).show();
+        } else if (title.trim().length() == 0 || title.isEmpty()) {
+            Toast.makeText(getActivity(), R.string.no_title, Toast.LENGTH_SHORT).show();
+        } else if (description.trim().length() == 0 || description.isEmpty()) {
+            Toast.makeText(getActivity(), R.string.no_description, Toast.LENGTH_SHORT).show();
+        } else if (!isValidDate()) {
+            Toast.makeText(getActivity(), R.string.wrong_date, Toast.LENGTH_SHORT).show();
+        } else {
+            return false;
+        }
+        return true;
+    }
+
     //Setup priority spinner to show strings from R.array.priority_level_list
     public void setupPrioritySpinner() {
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(getActivity(),
                 R.array.prirority_level_list, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mPriority.setAdapter(adapter);
-
     }
 
     //Check if date is in past
@@ -211,9 +214,7 @@ public class NewTaskDialogFragment extends DialogFragment {
         int daySelected = cal.get(Calendar.DAY_OF_MONTH);
         if (yearSelected <= yearNow) {
             if (monthSelected <= monthNow) {
-                if (daySelected < dayNow) {
-                    return false;
-                }
+                return daySelected >= dayNow;
             }
         }
         return true;
@@ -225,22 +226,22 @@ public class NewTaskDialogFragment extends DialogFragment {
         try {
             mOnAddListener = (OnTaskChangeListener) getActivity();
         } catch (ClassCastException e) {
+            e.printStackTrace();
         }
     }
 
-    //On createDialog check what action user want to make
-    //On updateAction populate fields with data from item to update
+    //Create dialog with empty fields
     private void createAction() {
         setupPrioritySpinner();
+        mPriority.setSelection(getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE).getInt(PRIORITY_PREF, 0));
     }
 
+    //Create dialog with task data in fields
     private void updateAction(String taskId) {
-        Dao<Task, String> taskDao;
         setupPrioritySpinner();
         try {
-            taskDao = getHelper().getTaskDao();
-            QueryBuilder<Task,String> queryBuilder = taskDao.queryBuilder();
-            taskForUpdate = taskDao.queryForFirst(queryBuilder.where().eq("id",taskId).prepare());
+            QueryBuilder<Task, String> queryBuilder = taskDao.queryBuilder();
+            taskForUpdate = taskDao.queryForFirst(queryBuilder.where().eq("id", taskId).prepare());
             mTitle.setText(taskForUpdate.getTitle());
             mDescription.setText(taskForUpdate.getDescription());
             mDate.setDate(taskForUpdate.getDate().getTime());
@@ -253,6 +254,7 @@ public class NewTaskDialogFragment extends DialogFragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         /*
          * You'll need this in your class to release the helper when done.
          */
@@ -260,13 +262,6 @@ public class NewTaskDialogFragment extends DialogFragment {
             OpenHelperManager.releaseHelper();
             databaseHelper = null;
         }
-    }
-
-    private DatabaseHelper getHelper() {
-        if (databaseHelper == null) {
-            databaseHelper = OpenHelperManager.getHelper(getActivity(), DatabaseHelper.class);
-        }
-        return databaseHelper;
     }
 
 }
