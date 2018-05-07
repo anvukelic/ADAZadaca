@@ -1,4 +1,4 @@
-package ada.osc.taskie.ui;
+package ada.osc.taskie.ui.task;
 
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
@@ -14,7 +14,6 @@ import java.util.Date;
 import java.util.List;
 
 import ada.osc.taskie.R;
-import ada.osc.taskie.TaskClickListener;
 import ada.osc.taskie.model.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -76,15 +75,15 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     }
 
     public class TaskViewHolder extends RecyclerView.ViewHolder {
-        @BindView(R.id.textview_recyclerview_title)
+        @BindView(R.id.textview_task_title)
         TextView mTitle;
-        @BindView(R.id.textview_recyclerview_description)
+        @BindView(R.id.textview_task_description)
         TextView mDescription;
-        @BindView(R.id.textview_recyclerview_date)
+        @BindView(R.id.textview_task_date)
         TextView mDate;
-        @BindView(R.id.imageview_recyclerview_priority)
+        @BindView(R.id.imageview_task_priority)
         ImageView mPrioritiy;
-        @BindView(R.id.switch_recyclerview_status)
+        @BindView(R.id.switch_task_status)
         Switch mStatus;
 
 
@@ -102,12 +101,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
             return mListener.onLongClick(mTasks.get(getAdapterPosition()));
         }
 
-        @OnClick(R.id.imageview_recyclerview_priority)
+        @OnClick(R.id.imageview_task_priority)
         public void changePriorityOnClick() {
             mListener.onPriorityChangeClick(mTasks.get(getAdapterPosition()));
         }
 
-        @OnClick(R.id.switch_recyclerview_status)
+        @OnClick(R.id.switch_task_status)
         public void changeStatusOnSwitch(){
             mListener.onStatusSwitchChange(mTasks.get(getAdapterPosition()));
         }

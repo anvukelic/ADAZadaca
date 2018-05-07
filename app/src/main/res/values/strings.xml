@@ -22,4 +22,7 @@
     <string name="done">Done</string>
     <string name="not_done">Not done</string>
     <string name="task_priority">Task priority</string>
+    <string name="categories">Categories</string>
+    <string name="add_category">Add category</string>
+    <string name="category_name">Name</string>
 </resources>

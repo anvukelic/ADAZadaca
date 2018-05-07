@@ -1,4 +1,4 @@
-package ada.osc.taskie;
+package ada.osc.taskie.ui.task;
 
 import android.app.AlertDialog;
 import android.content.Context;

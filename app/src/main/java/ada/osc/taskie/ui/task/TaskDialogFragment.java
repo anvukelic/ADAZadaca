@@ -1,11 +1,10 @@
-package ada.osc.taskie.ui;
+package ada.osc.taskie.ui.task;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -26,18 +25,17 @@ import java.sql.SQLException;
 import java.util.Calendar;
 import java.util.Date;
 
+import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
-import ada.osc.taskie.TaskDao;
 import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Task;
-import ada.osc.taskie.ui.TaskActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 /**
  * Created by avukelic on 28-Apr-18.
  */
-public class NewTaskDialogFragment extends DialogFragment {
+public class TaskDialogFragment extends DialogFragment {
 
     public interface OnTaskChangeListener {
         void onTaskChange(int action);
@@ -49,17 +47,17 @@ public class NewTaskDialogFragment extends DialogFragment {
     private Task taskForUpdate;
     Dao<Task, String> taskDao;
 
-    public OnTaskChangeListener mOnAddListener;
+    public OnTaskChangeListener mListener;
 
     private DatabaseHelper databaseHelper = null;
 
-    @BindView(R.id.edittext_newtask_title)
+    @BindView(R.id.edittext_task_dialog_title)
     EditText mTitle;
-    @BindView(R.id.edittext_newtask_description)
+    @BindView(R.id.edittext_task_dialog_description)
     EditText mDescription;
-    @BindView(R.id.spinner_newtask_priority)
+    @BindView(R.id.spinner_task_dialog_priority)
     Spinner mPriority;
-    @BindView(R.id.calendarview_newtask_date)
+    @BindView(R.id.calendarview_task_dialog_date)
     CalendarView mDate;
 
     Calendar selectedDate;
@@ -67,10 +65,15 @@ public class NewTaskDialogFragment extends DialogFragment {
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
-        View view = inflater.inflate(R.layout.dialog_creating_task, null);
+        View view = inflater.inflate(R.layout.dialog_task, null);
         ButterKnife.bind(this, view);
-        taskDao = TaskDao.getInstance(getActivity());
-        if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
+        try {
+            databaseHelper = new DatabaseHelper(getActivity());
+            taskDao = databaseHelper.getTaskDao();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
             createAction();
         } else {
             updateAction(getArguments().getString("taskId"));
@@ -91,7 +94,7 @@ public class NewTaskDialogFragment extends DialogFragment {
 
     //Set title and set buttons on AlertDialogBuilder
     public AlertDialog.Builder createDialog(AlertDialog.Builder builder) {
-        if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
+        if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
             builder.setTitle("Create new task")
                     .setPositiveButton(R.string.add_newtask, new DialogInterface.OnClickListener() {
                         @Override
@@ -141,16 +144,16 @@ public class NewTaskDialogFragment extends DialogFragment {
                 Date date = selectedDate.getTime();
                 wantToCloseDialog = !checkFields(title, description);
                 if (wantToCloseDialog) {
-                    if (getArguments().getInt("action") == TaskActivity.CREATE_TASK_ACTION) {
+                    if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
                         try {
                             taskDao.create(new Task(title, description, priority, date));
-                            mOnAddListener.onTaskChange(getArguments().getInt("action"));
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
                     } else {
                         updateTask(taskForUpdate.getId(), title, description, priority, date);
                     }
+                    mListener.onTaskChange(getArguments().getInt("action"));
                     getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE)
                             .edit().putInt(PRIORITY_PREF, priority).apply();
                     getDialog().dismiss();
@@ -224,7 +227,7 @@ public class NewTaskDialogFragment extends DialogFragment {
     public void onAttach(Context context) {
         super.onAttach(context);
         try {
-            mOnAddListener = (OnTaskChangeListener) getActivity();
+            mListener = (OnTaskChangeListener) getActivity();
         } catch (ClassCastException e) {
             e.printStackTrace();
         }
@@ -248,19 +251,6 @@ public class NewTaskDialogFragment extends DialogFragment {
             mPriority.setSelection(taskForUpdate.getPriority());
         } catch (SQLException e) {
             e.printStackTrace();
-        }
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-
-        /*
-         * You'll need this in your class to release the helper when done.
-         */
-        if (databaseHelper != null) {
-            OpenHelperManager.releaseHelper();
-            databaseHelper = null;
         }
     }
 

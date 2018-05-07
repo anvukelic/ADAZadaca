@@ -1,7 +1,7 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="ada.osc.taskie.ui.TaskActivity" >
+    tools:context="ada.osc.taskie.ui.task.TaskActivity" >
     <item
         android:id="@+id/menu_delete_task"
         android:title="@string/action_remove"/>

@@ -10,16 +10,18 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".ui.TaskActivity"
+            android:name=".ui.task.TaskActivity"
+            android:configChanges="orientation|screenSize|keyboardHidden"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme"
-            android:configChanges="orientation|screenSize|keyboardHidden">
+            android:theme="@style/AppTheme">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".ui.category.CategoryActivity"
+            android:parentActivityName=".ui.task.TaskActivity"/>
     </application>
 
 </manifest>

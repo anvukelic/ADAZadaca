@@ -5,7 +5,7 @@
     android:orientation="vertical">
 
     <EditText
-        android:id="@+id/edittext_newtask_title"
+        android:id="@+id/edittext_task_dialog_title"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/screen_margin"
@@ -14,7 +14,7 @@
         android:hint="@string/newtask_title" />
 
     <EditText
-        android:id="@+id/edittext_newtask_description"
+        android:id="@+id/edittext_task_dialog_description"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginEnd="@dimen/screen_margin"
@@ -24,14 +24,14 @@
         android:hint="@string/newtask_description" />
 
     <Spinner
-        android:id="@+id/spinner_newtask_priority"
+        android:id="@+id/spinner_task_dialog_priority"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="@dimen/margin_between_elements" />
 
     <CalendarView
-        android:id="@+id/calendarview_newtask_date"
+        android:id="@+id/calendarview_task_dialog_date"
         android:layout_marginTop="@dimen/margin_between_elements"
         android:layout_gravity="center"
         android:layout_width="wrap_content"

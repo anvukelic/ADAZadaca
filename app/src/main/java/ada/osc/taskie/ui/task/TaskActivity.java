@@ -1,6 +1,7 @@
-package ada.osc.taskie.ui;
+package ada.osc.taskie.ui.task;
 
 import android.app.DialogFragment;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
@@ -13,32 +14,31 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.Spinner;
-import android.widget.Switch;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
 
+import java.sql.SQLException;
 import java.util.List;
 
-import ada.osc.taskie.TaskHelper;
+import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
-import ada.osc.taskie.TaskClickListener;
-import ada.osc.taskie.TaskDao;
 import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Task;
+import ada.osc.taskie.ui.category.CategoryActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
-public class TaskActivity extends AppCompatActivity implements NewTaskDialogFragment.OnTaskChangeListener {
+public class TaskActivity extends AppCompatActivity implements TaskDialogFragment.OnTaskChangeListener {
 
     public static final String CREATE_TASK_TAG = "createTaskDialog";
-    public static final int CREATE_TASK_ACTION = 10;
-    public static final int UPDATE_TASK_ACTION = 20;
+
 
     private int mSortPriorityType;
     private int mFilterStatusType = 0;
+
+    private DatabaseHelper databaseHelper = null;
 
     @BindView(R.id.spinner_task_priority)
     Spinner mSortType;
@@ -46,7 +46,6 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     RecyclerView mRecyclerView;
     private TaskAdapter mAdapter;
 
-    private DatabaseHelper databaseHelper = null;
     private Dao<Task, String> taskDao;
     TaskClickListener mListener;
 
@@ -60,16 +59,20 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
-        taskDao = TaskDao.getInstance(this);
         setUpTaskClickListener();
         setUpRecyclerView();
         setupPrioritySpinner();
         setupFloatingButton();
+        try {
+            databaseHelper = new DatabaseHelper(this);
+            taskDao = databaseHelper.getTaskDao();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
 
     }
-
     @Override
-    protected void onDestroy() {
+    public void onDestroy() {
         super.onDestroy();
 
         /*
@@ -87,7 +90,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                showTaskDialogFragment(CREATE_TASK_ACTION, null);
+                showTaskDialogFragment(Consts.CREATE_ACTION, null);
             }
         });
     }
@@ -104,8 +107,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         mListener = new TaskClickListener() {
             @Override
             public void onClick(Task task) {
-                showTaskDialogFragment(UPDATE_TASK_ACTION, task.getId());
-                mAdapter.refreshData(getTasks());
+                showTaskDialogFragment(Consts.UPDATE_ACTION, task.getId());
             }
 
             @Override
@@ -151,10 +153,10 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     //Show task dialog
     //Two different calls: create and update
     private void showTaskDialogFragment(int action, String taskId) {
-        DialogFragment createTaskDialogFragment = new NewTaskDialogFragment();
+        DialogFragment createTaskDialogFragment = new TaskDialogFragment();
         Bundle args = new Bundle();
         args.putInt("action", action);
-        if (action == UPDATE_TASK_ACTION) {
+        if (action == Consts.UPDATE_ACTION) {
             args.putString("taskId", taskId);
         }
         createTaskDialogFragment.setArguments(args);
@@ -176,6 +178,9 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id) {
+            case R.id.intent_to_category:
+                startActivity(new Intent(this, CategoryActivity.class));
+                break;
             case R.id.action_settings:
                 return true;
             case R.id.toolbar_task_status:
@@ -202,7 +207,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
         return super.onOptionsItemSelected(item);
     }
 
-    //Called when NewTaskDialogFragment is close with positive button
+    //Called when TaskDialogFragment is close with positive button
     @Override
     public void onTaskChange(int action) {
         mAdapter.refreshData(getTasks());
@@ -211,6 +216,7 @@ public class TaskActivity extends AppCompatActivity implements NewTaskDialogFrag
     public List<Task> getTasks(){
         return TaskHelper.getTasksFromDb(mFilterStatusType,mSortPriorityType,taskDao);
     }
+
 
 
 
