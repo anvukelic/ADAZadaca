@@ -140,7 +140,10 @@ public class CategoryDialogFragment extends DialogFragment {
     //Check if all fields are populated
     private Boolean checkFields(String name) {
         if (name.trim().length() > 20) {
-            Toast.makeText(getActivity(), R.string.too_long_title, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.too_long_name, Toast.LENGTH_SHORT).show();
+        }
+        if (name.trim().length() == 0 || name.isEmpty()) {
+            Toast.makeText(getActivity(), R.string.name_field_empty, Toast.LENGTH_SHORT).show();
         } else {
             return false;
         }

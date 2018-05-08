@@ -1,4 +1,3 @@
-/*
 package ada.osc.taskie.model;
 
 import com.j256.ormlite.field.DatabaseField;
@@ -6,19 +5,18 @@ import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.UUID;
 
-*/
 /**
- * Created by avukelic on 07-May-18.
- *//*
+ * Created by avukelic on 07-May-18.*/
+
 
 @DatabaseTable(tableName = "task_category")
 public class TaskCategory {
 
     @DatabaseField(id = true, columnName = "id")
     private String mId;
-    @DatabaseField(columnName = "task")
+    @DatabaseField(columnName = "task", foreign = true)
     private Task mTask;
-    @DatabaseField(columnName = "category")
+    @DatabaseField(columnName = "category", foreign = true)
     private Category mCategory;
 
     public TaskCategory() {
@@ -41,4 +39,3 @@ public class TaskCategory {
         this.mCategory = mCategory;
     }
 }
-*/

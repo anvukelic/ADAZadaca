@@ -14,6 +14,7 @@ import java.sql.SQLException;
 import ada.osc.taskie.R;
 import ada.osc.taskie.model.Category;
 import ada.osc.taskie.model.Task;
+import ada.osc.taskie.model.TaskCategory;
 
 /**
  * Created by avukelic on 05-May-18.
@@ -21,11 +22,11 @@ import ada.osc.taskie.model.Task;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     public static final String DATABASE_NAME = "taskie.sqlite";
-    public static final int DATABASE_VERSION = 2;
+    public static final int DATABASE_VERSION = 3;
 
     private Dao<Task, String> taskDao = null;
     private Dao<Category, String> categoryDao = null;
-    //private Dao<TaskCategory, String> taskCategoryDao = null;
+    private Dao<TaskCategory, String> taskCategoryDao = null;
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION, R.raw.ormlite_config);
@@ -36,7 +37,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             TableUtils.createTableIfNotExists(connectionSource, Task.class);
             TableUtils.createTableIfNotExists(connectionSource, Category.class);
-            //TableUtils.createTableIfNotExists(connectionSource, TaskCategory.class);
+            TableUtils.createTableIfNotExists(connectionSource, TaskCategory.class);
             System.out.println("test");
         } catch (SQLException e) {
             Log.e("Taskie", "Unable to create database",e);
@@ -48,7 +49,7 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         try {
             TableUtils.dropTable(connectionSource, Task.class, true);
             TableUtils.dropTable(connectionSource, Category.class, true);
-            //TableUtils.dropTable(connectionSource, TaskCategory.class, true);
+            TableUtils.dropTable(connectionSource, TaskCategory.class, true);
             onCreate(database, connectionSource);
         } catch (SQLException e) {
             e.printStackTrace();
@@ -67,11 +68,11 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
         }
         return categoryDao;
     }
-    /*public Dao<TaskCategory, String> getTaskCategoryDao() throws SQLException {
+    public Dao<TaskCategory, String> getTaskCategoryDao() throws SQLException {
         if (taskCategoryDao == null) {
             taskCategoryDao = getDao(TaskCategory.class);
         }
         return taskCategoryDao;
-    }*/
+    }
 
 }

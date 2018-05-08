@@ -7,28 +7,37 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.CalendarView;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
 import com.j256.ormlite.stmt.QueryBuilder;
 import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
 import ada.osc.taskie.database.DatabaseHelper;
+import ada.osc.taskie.model.Category;
 import ada.osc.taskie.model.Task;
+import ada.osc.taskie.ui.category.CategoryHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
@@ -46,6 +55,7 @@ public class TaskDialogFragment extends DialogFragment {
 
     private Task taskForUpdate;
     Dao<Task, String> taskDao;
+    Dao<Category, String> categoryDao;
 
     public OnTaskChangeListener mListener;
 
@@ -59,37 +69,65 @@ public class TaskDialogFragment extends DialogFragment {
     Spinner mPriority;
     @BindView(R.id.calendarview_task_dialog_date)
     CalendarView mDate;
-
+    @BindView(R.id.recycler_view_task_categories)
+    RecyclerView mRecyclerView;
     Calendar selectedDate;
+
+    List<Category> categoriesOnTask = new ArrayList<>();
+    private TaskCategoryAdapter mAdapter;
+    TaskCategoryClickListener mTaskCategoryListener = new TaskCategoryClickListener() {
+        @Override
+        public void onClick(Category category) {
+            if (categoriesOnTask.indexOf(category) != -1) {
+                categoriesOnTask.remove(category);
+            } else {
+                categoriesOnTask.add(category);
+            }
+            removeFocusFromEditText();
+        }
+    };
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
         View view = inflater.inflate(R.layout.dialog_task, null);
         ButterKnife.bind(this, view);
-        try {
-            databaseHelper = new DatabaseHelper(getActivity());
-            taskDao = databaseHelper.getTaskDao();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
-            createAction();
-        } else {
-            updateAction(getArguments().getString("taskId"));
-        }
+        getDaos();
+        setUpRecyclerView();
+        checkAction();
+        setUpCalendarView();
+
+        return createAlertDialog(view);
+    }
+
+    private void setUpCalendarView() {
         selectedDate = Calendar.getInstance();
         selectedDate.setTimeInMillis(mDate.getDate());
         mDate.setOnDateChangeListener(new CalendarView.OnDateChangeListener() {
             @Override
             public void onSelectedDayChange(@NonNull CalendarView view, int year, int month, int dayOfMonth) {
                 selectedDate.set(year, month, dayOfMonth);
-                InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-                assert imm != null;
-                imm.hideSoftInputFromWindow(mTitle.getWindowToken(), 0);
+                removeFocusFromEditText();
             }
         });
-        return createAlertDialog(view);
+    }
+
+    private void checkAction() {
+        if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
+            createAction();
+        } else {
+            updateAction(getArguments().getString("taskId"));
+        }
+    }
+
+    private void getDaos() {
+        try {
+            databaseHelper = new DatabaseHelper(getActivity());
+            taskDao = databaseHelper.getTaskDao();
+            categoryDao = databaseHelper.getCategoryDao();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     //Set title and set buttons on AlertDialogBuilder
@@ -185,9 +223,9 @@ public class TaskDialogFragment extends DialogFragment {
         } else if (description.trim().length() > 150) {
             Toast.makeText(getActivity(), R.string.too_long_description, Toast.LENGTH_SHORT).show();
         } else if (title.trim().length() == 0 || title.isEmpty()) {
-            Toast.makeText(getActivity(), R.string.no_title, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.title_field_empty, Toast.LENGTH_SHORT).show();
         } else if (description.trim().length() == 0 || description.isEmpty()) {
-            Toast.makeText(getActivity(), R.string.no_description, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.description_field_empty, Toast.LENGTH_SHORT).show();
         } else if (!isValidDate()) {
             Toast.makeText(getActivity(), R.string.wrong_date, Toast.LENGTH_SHORT).show();
         } else {
@@ -202,6 +240,26 @@ public class TaskDialogFragment extends DialogFragment {
                 R.array.prirority_level_list, android.R.layout.simple_spinner_item);
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         mPriority.setAdapter(adapter);
+        mPriority.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                removeFocusFromEditText();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+    }
+
+    private void setUpRecyclerView() {
+        mAdapter = new TaskCategoryAdapter(mTaskCategoryListener);
+        RecyclerView.LayoutManager llm = new GridLayoutManager(getActivity().getApplicationContext(), 2);
+        mRecyclerView.setLayoutManager(llm);
+        mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), GridLayoutManager.VERTICAL));
+        mRecyclerView.setAdapter(mAdapter);
+        mAdapter.refreshData(CategoryHelper.getCategories(categoryDao));
     }
 
     //Check if date is in past
@@ -252,6 +310,12 @@ public class TaskDialogFragment extends DialogFragment {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+
+    private void removeFocusFromEditText() {
+        InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
+        assert imm != null;
+        imm.hideSoftInputFromWindow(mTitle.getWindowToken(), 0);
     }
 
 }

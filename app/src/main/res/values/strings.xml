@@ -5,8 +5,8 @@
     <string name="cancel">cancel</string>
     <string name="newtask_title">Title</string>
     <string name="newtask_description">Description</string>
-    <string name="no_title">Title can\'t be empty</string>
-    <string name="no_description">Description can\'t be empty</string>
+    <string name="title_field_empty">Title can\'t be empty</string>
+    <string name="description_field_empty">Description can\'t be empty</string>
     <string name="wrong_date">Date can\'t be in past</string>
     <string name="update_task">Update</string>
     <string name="all_tasks">All tasks</string>
@@ -17,12 +17,14 @@
     <string name="check_as_done">Check as done</string>
     <string name="action_update">Update</string>
     <string name="action_remove">Remove task</string>
-    <string name="too_long_title">Title can\'t be longer then 30 chars</string>
-    <string name="too_long_description">Description can\'t be longer then 150 chars</string>
+    <string name="too_long_title">Title can\'t be longer than 30 chars</string>
+    <string name="too_long_description">Description can\'t be longer than 150 chars</string>
     <string name="done">Done</string>
     <string name="not_done">Not done</string>
     <string name="task_priority">Task priority</string>
     <string name="categories">Categories</string>
     <string name="add_category">Add category</string>
     <string name="category_name">Name</string>
+    <string name="name_field_empty">Name can\'t be empty</string>
+    <string name="too_long_name">Name can\'t be longer than 30 chars</string>
 </resources>
