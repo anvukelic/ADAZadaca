@@ -1,5 +1,7 @@
 package ada.osc.taskie.model;
 
+import android.graphics.Color;
+
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
@@ -15,14 +17,17 @@ public class Category {
     private String mId;
     @DatabaseField(columnName = "name")
     private String mName;
+    @DatabaseField(columnName = "color")
+    private String mColor;
 
     public Category() {
         mId = UUID.randomUUID().toString();
     }
 
-    public Category(String mName) {
+    public Category(String mName,String mColor) {
         mId = UUID.randomUUID().toString();
         this.mName = mName;
+        this.mColor = mColor;
     }
 
     public String getId() {
@@ -39,6 +44,14 @@ public class Category {
 
     public void setName(String mName) {
         this.mName = mName;
+    }
+
+    public String getColor() {
+        return mColor;
+    }
+
+    public void setColor(String mColor) {
+        this.mColor = mColor;
     }
 
     @Override

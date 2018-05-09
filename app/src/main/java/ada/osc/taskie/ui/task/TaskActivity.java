@@ -18,6 +18,9 @@ import android.widget.Spinner;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.SelectArg;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -25,7 +28,9 @@ import java.util.List;
 import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
 import ada.osc.taskie.database.DatabaseHelper;
+import ada.osc.taskie.model.Category;
 import ada.osc.taskie.model.Task;
+import ada.osc.taskie.model.TaskCategory;
 import ada.osc.taskie.ui.category.CategoryActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -47,6 +52,8 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
     private TaskAdapter mAdapter;
 
     private Dao<Task, String> taskDao;
+    private Dao<Category, String> categoryDao;
+    private Dao<TaskCategory, String> taskCategoryDao;
     TaskClickListener mListener;
 
     /**
@@ -60,17 +67,26 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
         setSupportActionBar(toolbar);
         ButterKnife.bind(this);
         setUpTaskClickListener();
-        setUpRecyclerView();
+        setUpTaskRecyclerView();
         setupPrioritySpinner();
         setupFloatingButton();
         try {
             databaseHelper = new DatabaseHelper(this);
             taskDao = databaseHelper.getTaskDao();
+            categoryDao = databaseHelper.getCategoryDao();
+            taskCategoryDao = databaseHelper.getTaskCategoryDao();
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
     }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mAdapter.refreshData(getTasks());
+    }
+
     @Override
     public void onDestroy() {
         super.onDestroy();
@@ -95,8 +111,8 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
         });
     }
 
-    private void setUpRecyclerView() {
-        mAdapter = new TaskAdapter(mListener);
+    private void setUpTaskRecyclerView() {
+        mAdapter = new TaskAdapter(mListener,this);
         RecyclerView.LayoutManager llm = new LinearLayoutManager(getApplicationContext());
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
@@ -178,7 +194,7 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
         switch (id) {
-            case R.id.intent_to_category:
+            case R.id.action_intent_to_categories:
                 startActivity(new Intent(this, CategoryActivity.class));
                 break;
             case R.id.action_settings:
@@ -216,8 +232,5 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
     public List<Task> getTasks(){
         return TaskHelper.getTasksFromDb(mFilterStatusType,mSortPriorityType,taskDao);
     }
-
-
-
 
 }

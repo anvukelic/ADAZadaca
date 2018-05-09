@@ -9,6 +9,8 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Toast;
 
 import com.j256.ormlite.android.apptools.OpenHelperManager;
@@ -43,7 +45,8 @@ public class CategoryDialogFragment extends DialogFragment {
 
     @BindView(R.id.edittext_category_dialog_name)
     EditText mName;
-
+    @BindView(R.id.radiogroup_category_dialog_color)
+    RadioGroup mColorRadioGroup;
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         LayoutInflater inflater = getActivity().getLayoutInflater();
@@ -107,16 +110,23 @@ public class CategoryDialogFragment extends DialogFragment {
             public void onClick(View v) {
                 Boolean wantToCloseDialog;
                 String name = mName.getText().toString();
+                RadioButton radioBtn = mColorRadioGroup.findViewById(mColorRadioGroup.getCheckedRadioButtonId());
+                String color;
+                if(mColorRadioGroup.getCheckedRadioButtonId()!=-1){
+                    color = radioBtn.getText().toString();
+                } else {
+                    color = "black";
+                }
                 wantToCloseDialog = !checkFields(name);
                 if (wantToCloseDialog) {
                     if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
                         try {
-                            categoryDao.create(new Category(name));
+                            categoryDao.create(new Category(name,color));
                         } catch (SQLException e) {
                             e.printStackTrace();
                         }
                     } else {
-                        updateCategory(categoryForUpdate.getId(), name);
+                        updateCategory(categoryForUpdate.getId(), name, color);
                     }
                     mListener.onCategoryChange(getArguments().getInt("action"));
                     getDialog().dismiss();
@@ -126,11 +136,12 @@ public class CategoryDialogFragment extends DialogFragment {
         return dialog;
     }
 
-    private void updateCategory(String categoryId, String name) {
+    private void updateCategory(String categoryId, String name, String color) {
         try {
             UpdateBuilder<Category, String> updateBuilder = categoryDao.updateBuilder();
             updateBuilder.where().eq("id", categoryId);
             updateBuilder.updateColumnValue("name", name);
+            updateBuilder.updateColumnValue("color", color);
             updateBuilder.update();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -168,6 +179,23 @@ public class CategoryDialogFragment extends DialogFragment {
             QueryBuilder<Category, String> queryBuilder = categoryDao.queryBuilder();
             categoryForUpdate = categoryDao.queryForFirst(queryBuilder.where().eq("id", categoryId).prepare());
             mName.setText(categoryForUpdate.getName());
+            switch (categoryForUpdate.getColor().toLowerCase()) {
+                case "red":
+                    mColorRadioGroup.check(R.id.radiobutton_red);
+                    break;
+                case "green":
+                    mColorRadioGroup.check(R.id.radiobutton_green);
+                    break;
+                case "blue":
+                    mColorRadioGroup.check(R.id.radiobutton_blue);
+                    break;
+                case "purple":
+                    mColorRadioGroup.check(R.id.radiobutton_purple);
+                    break;
+                case "orange":
+                    mColorRadioGroup.check(R.id.radiobutton_orange);
+                    break;
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }

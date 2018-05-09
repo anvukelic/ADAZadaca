@@ -2,7 +2,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="ada.osc.taskie.ui.task.TaskActivity" >
-    <item android:id="@+id/intent_to_category"
+    <item android:id="@+id/action_intent_to_categories"
         android:title="@string/categories"
         android:orderInCategory="100"
         app:showAsAction="never" />

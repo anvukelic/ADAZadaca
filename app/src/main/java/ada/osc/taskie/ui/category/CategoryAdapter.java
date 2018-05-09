@@ -1,5 +1,6 @@
 package ada.osc.taskie.ui.category;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -22,11 +23,13 @@ import butterknife.OnLongClick;
 public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.CategoryViewHolder> {
     private List<Category> mCategories;
     private CategoryClickListener mListener;
+    Context mContext;
 
 
-    public CategoryAdapter(CategoryClickListener listener) {
+    public CategoryAdapter(CategoryClickListener listener, Context context) {
         mListener = listener;
         mCategories = new ArrayList<>();
+        mContext = context;
     }
 
     public void refreshData(List<Category> categories) {
@@ -42,6 +45,25 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public void onBindViewHolder(final CategoryViewHolder holder, final int position) {
         Category c = mCategories.get(position);
         holder.mName.setText(c.getName());
+        switch (c.getColor().toLowerCase()) {
+            case "red":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryRed));
+                break;
+            case "green":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryGreen));
+                break;
+            case "blue":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryBlue));
+                break;
+            case "purple":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryPurple));
+                break;
+            case "orange":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryOrange));
+                break;
+            default:
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryBlack));
+        }
     }
 
     @Override
@@ -66,12 +88,12 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
         }
 
         @OnClick
-        public void onCategoryClick(){
+        public void onCategoryClick() {
             mListener.onClick(mCategories.get(getAdapterPosition()));
         }
 
         @OnLongClick
-        public boolean onLongClick(){
+        public boolean onLongClick() {
             return mListener.onLongClick(mCategories.get(getAdapterPosition()));
         }
     }

@@ -15,7 +15,7 @@
         android:contentDescription="@string/task_priority" />
     <TextView
         android:id="@+id/textview_task_date"
-        android:layout_width="wrap_content"
+        android:layout_width="150dp"
         android:layout_height="wrap_content"
         android:layout_alignStart="@id/imageview_task_priority"
         android:layout_alignTop="@id/imageview_task_priority"
@@ -35,6 +35,12 @@
         android:orientation="vertical"
         android:layout_marginStart="@dimen/screen_margin"
         tools:ignore="RtlSymmetry">
+        <android.support.v7.widget.RecyclerView
+        android:id="@+id/recycler_view_task_item_category"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content">
+
+    </android.support.v7.widget.RecyclerView>
         <TextView
             android:id="@+id/textview_task_title"
             android:layout_width="wrap_content"

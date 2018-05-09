@@ -22,7 +22,7 @@ import ada.osc.taskie.model.TaskCategory;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     public static final String DATABASE_NAME = "taskie.sqlite";
-    public static final int DATABASE_VERSION = 3;
+    public static final int DATABASE_VERSION = 4;
 
     private Dao<Task, String> taskDao = null;
     private Dao<Category, String> categoryDao = null;

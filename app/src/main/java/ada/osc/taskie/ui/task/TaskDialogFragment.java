@@ -40,6 +40,8 @@ import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Category;
 import ada.osc.taskie.model.Task;
 import ada.osc.taskie.model.TaskCategory;
+import ada.osc.taskie.ui.TaskCategory.TaskCategoryAdapter;
+import ada.osc.taskie.ui.TaskCategory.TaskCategoryClickListener;
 import ada.osc.taskie.ui.category.CategoryHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -83,9 +85,9 @@ public class TaskDialogFragment extends DialogFragment {
         @Override
         public void onClick(Category category, int visiblity) {
             if (visiblity == View.GONE) {
-                for (Category c:categoriesOnTask
-                     ) {
-                    if(c.getId().equals(category.getId())){
+                for (Category c : categoriesOnTask
+                        ) {
+                    if (c.getId().equals(category.getId())) {
                         categoriesOnTask.remove(c);
                         break;
                     }
@@ -106,7 +108,6 @@ public class TaskDialogFragment extends DialogFragment {
         checkAction();
         setUpRecyclerView();
         setUpCalendarView();
-
         return createAlertDialog(view);
     }
 
@@ -212,7 +213,7 @@ public class TaskDialogFragment extends DialogFragment {
                 //On update first delete all TaskCategory objects for that task
                 DeleteBuilder<TaskCategory, String> deleteBuilder = taskCategoryDao.deleteBuilder();
                 try {
-                    deleteBuilder.where().eq("task",taskForUpdate);
+                    deleteBuilder.where().eq("task", taskForUpdate);
                     deleteBuilder.delete();
                     updateTask(taskForUpdate.getId(), title, description, priority, date);
                     //Again create all TaskCategory with new list
@@ -230,7 +231,7 @@ public class TaskDialogFragment extends DialogFragment {
 
     //Create TaskCategory object for all selected categories on this task
     private void createTaskCategoryObject(Task task) throws SQLException {
-        for (Category category: categoriesOnTask) {
+        for (Category category : categoriesOnTask) {
             taskCategoryDao.create(new TaskCategory(task, category));
         }
     }
@@ -287,15 +288,19 @@ public class TaskDialogFragment extends DialogFragment {
     }
 
     private void setUpRecyclerView() {
-        mAdapter = new TaskCategoryAdapter(mTaskCategoryListener);
+        if (getArguments().getInt("action") == Consts.UPDATE_ACTION) {
+            mAdapter = new TaskCategoryAdapter(mTaskCategoryListener, taskForUpdate.getId(), getActivity());
+        } else {
+            mAdapter = new TaskCategoryAdapter(mTaskCategoryListener, getActivity());
+        }
         RecyclerView.LayoutManager llm = new GridLayoutManager(getActivity().getApplicationContext(), 2);
         mRecyclerView.setLayoutManager(llm);
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), GridLayoutManager.VERTICAL));
         mRecyclerView.setAdapter(mAdapter);
-        if(getArguments().getInt("action")==Consts.UPDATE_ACTION){
+        if (getArguments().getInt("action") == Consts.UPDATE_ACTION) {
             try {
-                mAdapter.refreshData(CategoryHelper.getCategories(categoryDao),lookupCategoriesForTask(taskForUpdate));
+                mAdapter.refreshData(CategoryHelper.getCategories(categoryDao), lookupCategoriesForTask(taskForUpdate));
                 categoriesOnTask.addAll(lookupCategoriesForTask(taskForUpdate));
             } catch (SQLException e) {
                 e.printStackTrace();
@@ -378,7 +383,6 @@ public class TaskDialogFragment extends DialogFragment {
         taskCategoryQb.selectColumns("category");
         SelectArg postSelectArg = new SelectArg();
         taskCategoryQb.where().eq("task", postSelectArg);
-
         // build our outer query
         QueryBuilder<Category, String> categoryQb = categoryDao.queryBuilder();
         // where the user-id matches the inner query's user-id field

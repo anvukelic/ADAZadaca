@@ -1,4 +1,4 @@
-package ada.osc.taskie.ui.task;
+package ada.osc.taskie.ui.TaskCategory;
 
 import android.view.View;
 

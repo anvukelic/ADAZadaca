@@ -1,5 +1,10 @@
 package ada.osc.taskie.ui.task;
 
+import android.content.Context;
+import android.support.v7.widget.DefaultItemAnimator;
+import android.support.v7.widget.DividerItemDecoration;
+import android.support.v7.widget.GridLayoutManager;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,13 +13,24 @@ import android.widget.ImageView;
 import android.widget.Switch;
 import android.widget.TextView;
 
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.PreparedQuery;
+import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.SelectArg;
+
+import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import ada.osc.taskie.R;
+import ada.osc.taskie.database.DatabaseHelper;
+import ada.osc.taskie.model.Category;
 import ada.osc.taskie.model.Task;
+import ada.osc.taskie.model.TaskCategory;
+import ada.osc.taskie.ui.TaskCategory.CategoryOnTaskAdapter;
+import ada.osc.taskie.ui.category.CategoryActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -27,9 +43,21 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     private List<Task> mTasks;
     private TaskClickListener mListener;
 
-    public TaskAdapter(TaskClickListener listener) {
+    private List<Category> mCategories;
+
+    private Context mContext;
+
+    private CategoryOnTaskAdapter mAdapter;
+
+    private DatabaseHelper databaseHelper = null;
+    private Dao<Category, String> categoryDao;
+    private Dao<TaskCategory, String> taskCategoryDao;
+
+    public TaskAdapter(TaskClickListener listener,Context context) {
         mListener = listener;
         mTasks = new ArrayList<>();
+        mContext = context;
+        getDaos();
     }
 
     public void refreshData(List<Task> tasks) {
@@ -60,6 +88,19 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         }
         holder.mDate.setText(formatDate(t.getDate()));
         holder.mStatus.setChecked(t.isDone());
+        setUpCategoryOnTaskRecyclerView(holder, t);
+    }
+
+    private void setUpCategoryOnTaskRecyclerView(TaskViewHolder holder, Task t) {
+        try {
+            mAdapter = new CategoryOnTaskAdapter(lookupCategoriesForTask(t),mContext);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        RecyclerView.LayoutManager llm = new LinearLayoutManager(mContext,LinearLayoutManager.HORIZONTAL,false);
+        holder.mRecyclerView.setLayoutManager(llm);
+        holder.mRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        holder.mRecyclerView.setAdapter(mAdapter);
     }
 
     @Override
@@ -86,6 +127,8 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         ImageView mPrioritiy;
         @BindView(R.id.switch_task_status)
         Switch mStatus;
+        @BindView(R.id.recycler_view_task_item_category)
+        RecyclerView mRecyclerView;
 
 
         public TaskViewHolder(View view, TaskClickListener taskClickListener) {
@@ -116,6 +159,40 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     private String formatDate(Date date) {
         SimpleDateFormat sd = new SimpleDateFormat("dd.\nMMM");
         return sd.format(date);
+    }
+
+    private PreparedQuery<Category> categoriesForPostQuery = null;
+
+    private List<Category> lookupCategoriesForTask(Task task) throws SQLException {
+        if (categoriesForPostQuery == null) {
+            categoriesForPostQuery = makeCategoriesForTaskQuery();
+        }
+        categoriesForPostQuery.setArgumentHolderValue(0, task);
+        return categoryDao.query(categoriesForPostQuery);
+    }
+
+    private PreparedQuery<Category> makeCategoriesForTaskQuery() throws SQLException {
+        QueryBuilder<TaskCategory, String> taskCategoryQb = taskCategoryDao.queryBuilder();
+        // this time selecting for the user-id field
+        taskCategoryQb.selectColumns("category");
+        SelectArg postSelectArg = new SelectArg();
+        taskCategoryQb.where().eq("task", postSelectArg);
+
+        // build our outer query
+        QueryBuilder<Category, String> categoryQb = categoryDao.queryBuilder();
+        // where the user-id matches the inner query's user-id field
+        categoryQb.where().in("id", taskCategoryQb);
+        return categoryQb.prepare();
+    }
+
+    private void getDaos() {
+        try {
+            databaseHelper = new DatabaseHelper(mContext);
+            categoryDao = databaseHelper.getCategoryDao();
+            taskCategoryDao = databaseHelper.getTaskCategoryDao();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
 

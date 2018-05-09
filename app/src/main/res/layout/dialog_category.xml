@@ -13,4 +13,48 @@
         android:gravity="center"
         android:hint="@string/category_name" />
 
+    <RadioGroup
+        android:id="@+id/radiogroup_category_dialog_color"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_gravity="center">
+
+        <RadioButton
+            android:id="@+id/radiobutton_red"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Red"
+            android:textColor="@color/colorCategoryRed" />
+
+        <RadioButton
+            android:id="@+id/radiobutton_green"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Green"
+            android:textColor="@color/colorCategoryGreen" />
+
+        <RadioButton
+            android:id="@+id/radiobutton_blue"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Blue"
+            android:textColor="@color/colorCategoryBlue" />
+
+        <RadioButton
+            android:id="@+id/radiobutton_purple"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Purple"
+            android:textColor="@color/colorCategoryPurple" />
+
+        <RadioButton
+            android:id="@+id/radiobutton_orange"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Orange"
+            android:textColor="@color/colorCategoryOrange" />
+    </RadioGroup>
+
+
 </LinearLayout>

@@ -21,6 +21,7 @@ import ada.osc.taskie.model.Task;
  */
 public class CategoryHelper {
 
+
     public static List<Category> getCategories(Dao<Category,String> categoryDao) {
         QueryBuilder<Category, String> queryBuilder = categoryDao.queryBuilder();
         try {
@@ -33,9 +34,9 @@ public class CategoryHelper {
 
 
     // Delete category from DB
-    public static void deleteCategory(final Category category, Context context, final Dao<Category,String> categoryDao) {
+    public static void deleteCategory(final Category category, Context context, final Dao<Category,String> categoryDao, final CategoryAdapter adapter) {
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        builder.setMessage("Are you sure you want to delete '" + category.getClass() + "' category");
+        builder.setMessage("Are you sure you want to delete '" + category + "' category");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
@@ -43,6 +44,7 @@ public class CategoryHelper {
                 try {
                     deleteBuilder.where().eq("id", category.getId());
                     deleteBuilder.delete();
+                    adapter.refreshData(getCategories(categoryDao));
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }

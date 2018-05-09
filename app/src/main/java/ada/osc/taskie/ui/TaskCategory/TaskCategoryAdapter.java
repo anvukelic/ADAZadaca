@@ -1,5 +1,6 @@
-package ada.osc.taskie.ui.task;
+package ada.osc.taskie.ui.TaskCategory;
 
+import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
@@ -8,11 +9,17 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.QueryBuilder;
+
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
 import ada.osc.taskie.R;
+import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Category;
+import ada.osc.taskie.model.TaskCategory;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -24,11 +31,37 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
     private List<Category> mCategories;
     private List<Category> mCategoriesOnTask;
     private TaskCategoryClickListener mListener;
+    private DatabaseHelper databaseHelper = null;
+    private String mTaskId;
+    private Context mContext;
 
-    public TaskCategoryAdapter(TaskCategoryClickListener listener) {
+    private Dao<TaskCategory, String> taskCategoryDao;
+
+    public TaskCategoryAdapter(TaskCategoryClickListener listener, String taskId, Context context) {
+        mListener = listener;
+        mTaskId = taskId;
+        mCategories = new ArrayList<>();
+        mCategoriesOnTask = new ArrayList<>();
+        mContext = context;
+        try {
+            databaseHelper = new DatabaseHelper(context);
+            taskCategoryDao = databaseHelper.getTaskCategoryDao();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public TaskCategoryAdapter(TaskCategoryClickListener listener, Context context) {
         mListener = listener;
         mCategories = new ArrayList<>();
         mCategoriesOnTask = new ArrayList<>();
+        mContext = context;
+        try {
+            databaseHelper = new DatabaseHelper(context);
+            taskCategoryDao = databaseHelper.getTaskCategoryDao();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
     }
 
     public void refreshData(List<Category> categories, List<Category> categoriesOnTask) {
@@ -52,10 +85,31 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
     public void onBindViewHolder(final TaskCategoryViewHolder holder, final int position) {
         Category c = mCategories.get(position);
         holder.mName.setText(c.getName());
-        for (Category category : mCategoriesOnTask) {
-            if (c.getId().equals(category.getId())) {
-                holder.mCategorySelected.setVisibility(View.VISIBLE);
+        switch (c.getColor().toLowerCase()) {
+            case "red":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryRed));
                 break;
+            case "green":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryGreen));
+                break;
+            case "blue":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryBlue));
+                break;
+            case "purple":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryPurple));
+                break;
+            case "orange":
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryOrange));
+                break;
+        }
+        if (mTaskId != null) {
+            QueryBuilder<TaskCategory, String> queryBuilder = taskCategoryDao.queryBuilder();
+            try {
+                if (queryBuilder.where().eq("task", mTaskId).and().eq("category", c.getId()).query().size() == 1) {
+                    holder.mCategorySelected.setVisibility(View.VISIBLE);
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
             }
         }
     }
@@ -92,7 +146,7 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
             } else {
                 mCategorySelected.setVisibility(View.GONE);
             }
-            mListener.onClick(mCategories.get(getAdapterPosition()),mCategorySelected.getVisibility());
+            mListener.onClick(mCategories.get(getAdapterPosition()), mCategorySelected.getVisibility());
         }
 
     }

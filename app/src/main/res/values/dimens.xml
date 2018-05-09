@@ -2,4 +2,6 @@
     <dimen name="fab_margin">16dp</dimen>
     <dimen name="screen_margin">16dp</dimen>
     <dimen name="margin_between_elements">8dp</dimen>
+    <dimen name="category_on_task">2dp</dimen>
+    <dimen name="textMinimum">12sp</dimen>
 </resources>
