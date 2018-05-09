@@ -85,7 +85,7 @@ public class TaskDialogFragment extends DialogFragment {
             if (visiblity == View.GONE) {
                 for (Category c:categoriesOnTask
                      ) {
-                    if(c.getName().equals(category.getName())){
+                    if(c.getId().equals(category.getId())){
                         categoriesOnTask.remove(c);
                         break;
                     }

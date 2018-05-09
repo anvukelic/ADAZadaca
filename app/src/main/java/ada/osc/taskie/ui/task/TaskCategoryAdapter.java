@@ -53,7 +53,7 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
         Category c = mCategories.get(position);
         holder.mName.setText(c.getName());
         for (Category category : mCategoriesOnTask) {
-            if (c.getName().equals(category.getName())) {
+            if (c.getId().equals(category.getId())) {
                 holder.mCategorySelected.setVisibility(View.VISIBLE);
                 break;
             }
