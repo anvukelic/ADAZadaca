@@ -131,6 +131,7 @@ public class CategoryDialogFragment extends DialogFragment {
             UpdateBuilder<Category, String> updateBuilder = categoryDao.updateBuilder();
             updateBuilder.where().eq("id", categoryId);
             updateBuilder.updateColumnValue("name", name);
+            updateBuilder.update();
         } catch (SQLException e) {
             e.printStackTrace();
         }

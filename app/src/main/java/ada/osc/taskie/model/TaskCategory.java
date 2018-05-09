@@ -23,6 +23,12 @@ public class TaskCategory {
         mId = UUID.randomUUID().toString();
     }
 
+    public TaskCategory(Task mTask, Category mCategory) {
+        mId = UUID.randomUUID().toString();
+        this.mTask = mTask;
+        this.mCategory = mCategory;
+    }
+
     public Task getTask() {
         return mTask;
     }

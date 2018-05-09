@@ -22,11 +22,21 @@ import butterknife.OnClick;
  */
 public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapter.TaskCategoryViewHolder> {
     private List<Category> mCategories;
+    private List<Category> mCategoriesOnTask;
     private TaskCategoryClickListener mListener;
 
     public TaskCategoryAdapter(TaskCategoryClickListener listener) {
         mListener = listener;
         mCategories = new ArrayList<>();
+        mCategoriesOnTask = new ArrayList<>();
+    }
+
+    public void refreshData(List<Category> categories, List<Category> categoriesOnTask) {
+        mCategories.clear();
+        mCategories.addAll(categories);
+        mCategoriesOnTask.clear();
+        mCategoriesOnTask.addAll(categoriesOnTask);
+        notifyDataSetChanged();
     }
 
     public void refreshData(List<Category> categories) {
@@ -42,6 +52,12 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
     public void onBindViewHolder(final TaskCategoryViewHolder holder, final int position) {
         Category c = mCategories.get(position);
         holder.mName.setText(c.getName());
+        for (Category category : mCategoriesOnTask) {
+            if (c.getName().equals(category.getName())) {
+                holder.mCategorySelected.setVisibility(View.VISIBLE);
+                break;
+            }
+        }
     }
 
     @Override
@@ -65,18 +81,18 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
         public TaskCategoryViewHolder(View view, TaskCategoryClickListener taskCategoryClickListener) {
             super(view);
             ButterKnife.bind(this, view);
-            mName.setTextSize(TypedValue.COMPLEX_UNIT_SP,16);
+            mName.setTextSize(TypedValue.COMPLEX_UNIT_SP, 16);
             mCategorySelected.getLayoutParams().height = 55;
         }
 
         @OnClick
-        public void onCategoryClick(){
-            if(mCategorySelected.getVisibility()==View.GONE){
+        public void onCategoryClick() {
+            if (mCategorySelected.getVisibility() == View.GONE) {
                 mCategorySelected.setVisibility(View.VISIBLE);
             } else {
                 mCategorySelected.setVisibility(View.GONE);
             }
-            mListener.onClick(mCategories.get(getAdapterPosition()));
+            mListener.onClick(mCategories.get(getAdapterPosition()),mCategorySelected.getVisibility());
         }
 
     }

@@ -10,7 +10,6 @@ import android.support.annotation.NonNull;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.GridLayoutManager;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -23,7 +22,10 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.j256.ormlite.dao.Dao;
+import com.j256.ormlite.stmt.DeleteBuilder;
+import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
+import com.j256.ormlite.stmt.SelectArg;
 import com.j256.ormlite.stmt.UpdateBuilder;
 
 import java.sql.SQLException;
@@ -37,6 +39,7 @@ import ada.osc.taskie.R;
 import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Category;
 import ada.osc.taskie.model.Task;
+import ada.osc.taskie.model.TaskCategory;
 import ada.osc.taskie.ui.category.CategoryHelper;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -56,6 +59,7 @@ public class TaskDialogFragment extends DialogFragment {
     private Task taskForUpdate;
     Dao<Task, String> taskDao;
     Dao<Category, String> categoryDao;
+    Dao<TaskCategory, String> taskCategoryDao;
 
     public OnTaskChangeListener mListener;
 
@@ -77,9 +81,15 @@ public class TaskDialogFragment extends DialogFragment {
     private TaskCategoryAdapter mAdapter;
     TaskCategoryClickListener mTaskCategoryListener = new TaskCategoryClickListener() {
         @Override
-        public void onClick(Category category) {
-            if (categoriesOnTask.indexOf(category) != -1) {
-                categoriesOnTask.remove(category);
+        public void onClick(Category category, int visiblity) {
+            if (visiblity == View.GONE) {
+                for (Category c:categoriesOnTask
+                     ) {
+                    if(c.getName().equals(category.getName())){
+                        categoriesOnTask.remove(c);
+                        break;
+                    }
+                }
             } else {
                 categoriesOnTask.add(category);
             }
@@ -93,8 +103,8 @@ public class TaskDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.dialog_task, null);
         ButterKnife.bind(this, view);
         getDaos();
-        setUpRecyclerView();
         checkAction();
+        setUpRecyclerView();
         setUpCalendarView();
 
         return createAlertDialog(view);
@@ -125,6 +135,7 @@ public class TaskDialogFragment extends DialogFragment {
             databaseHelper = new DatabaseHelper(getActivity());
             taskDao = databaseHelper.getTaskDao();
             categoryDao = databaseHelper.getCategoryDao();
+            taskCategoryDao = databaseHelper.getTaskCategoryDao();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -181,24 +192,47 @@ public class TaskDialogFragment extends DialogFragment {
                 int priority = mPriority.getSelectedItemPosition();
                 Date date = selectedDate.getTime();
                 wantToCloseDialog = !checkFields(title, description);
-                if (wantToCloseDialog) {
-                    if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
-                        try {
-                            taskDao.create(new Task(title, description, priority, date));
-                        } catch (SQLException e) {
-                            e.printStackTrace();
-                        }
-                    } else {
-                        updateTask(taskForUpdate.getId(), title, description, priority, date);
-                    }
-                    mListener.onTaskChange(getArguments().getInt("action"));
-                    getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE)
-                            .edit().putInt(PRIORITY_PREF, priority).apply();
-                    getDialog().dismiss();
-                }
+                doActionOnPositiveClose(wantToCloseDialog, title, description, priority, date);
             }
         });
         return dialog;
+    }
+
+    private void doActionOnPositiveClose(Boolean wantToCloseDialog, String title, String description, int priority, Date date) {
+        if (wantToCloseDialog) {
+            if (getArguments().getInt("action") == Consts.CREATE_ACTION) {
+                try {
+                    Task task = new Task(title, description, priority, date);
+                    taskDao.create(task);
+                    createTaskCategoryObject(task);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                //On update first delete all TaskCategory objects for that task
+                DeleteBuilder<TaskCategory, String> deleteBuilder = taskCategoryDao.deleteBuilder();
+                try {
+                    deleteBuilder.where().eq("task",taskForUpdate);
+                    deleteBuilder.delete();
+                    updateTask(taskForUpdate.getId(), title, description, priority, date);
+                    //Again create all TaskCategory with new list
+                    createTaskCategoryObject(taskForUpdate);
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+            mListener.onTaskChange(getArguments().getInt("action"));
+            getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE)
+                    .edit().putInt(PRIORITY_PREF, priority).apply();
+            getDialog().dismiss();
+        }
+    }
+
+    //Create TaskCategory object for all selected categories on this task
+    private void createTaskCategoryObject(Task task) throws SQLException {
+        for (Category category: categoriesOnTask) {
+            taskCategoryDao.create(new TaskCategory(task, category));
+        }
     }
 
     private void updateTask(String taskId, String title, String description, int priority, Date date) {
@@ -259,7 +293,17 @@ public class TaskDialogFragment extends DialogFragment {
         mRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(), GridLayoutManager.VERTICAL));
         mRecyclerView.setAdapter(mAdapter);
-        mAdapter.refreshData(CategoryHelper.getCategories(categoryDao));
+        if(getArguments().getInt("action")==Consts.UPDATE_ACTION){
+            try {
+                mAdapter.refreshData(CategoryHelper.getCategories(categoryDao),lookupCategoriesForTask(taskForUpdate));
+                categoriesOnTask.addAll(lookupCategoriesForTask(taskForUpdate));
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        } else {
+            mAdapter.refreshData(CategoryHelper.getCategories(categoryDao));
+        }
+
     }
 
     //Check if date is in past
@@ -316,6 +360,30 @@ public class TaskDialogFragment extends DialogFragment {
         InputMethodManager imm = (InputMethodManager) getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
         assert imm != null;
         imm.hideSoftInputFromWindow(mTitle.getWindowToken(), 0);
+    }
+
+    private PreparedQuery<Category> categoriesForPostQuery = null;
+
+    private List<Category> lookupCategoriesForTask(Task task) throws SQLException {
+        if (categoriesForPostQuery == null) {
+            categoriesForPostQuery = makeCategoriesForTaskQuery();
+        }
+        categoriesForPostQuery.setArgumentHolderValue(0, task);
+        return categoryDao.query(categoriesForPostQuery);
+    }
+
+    private PreparedQuery<Category> makeCategoriesForTaskQuery() throws SQLException {
+        QueryBuilder<TaskCategory, String> taskCategoryQb = taskCategoryDao.queryBuilder();
+        // this time selecting for the user-id field
+        taskCategoryQb.selectColumns("category");
+        SelectArg postSelectArg = new SelectArg();
+        taskCategoryQb.where().eq("task", postSelectArg);
+
+        // build our outer query
+        QueryBuilder<Category, String> categoryQb = categoryDao.queryBuilder();
+        // where the user-id matches the inner query's user-id field
+        categoryQb.where().in("id", taskCategoryQb);
+        return categoryQb.prepare();
     }
 
 }
