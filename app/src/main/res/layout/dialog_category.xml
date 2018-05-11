@@ -24,35 +24,35 @@
             android:id="@+id/radiobutton_red"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Red"
+            android:text="@string/color_red_text"
             android:textColor="@color/colorCategoryRed" />
 
         <RadioButton
             android:id="@+id/radiobutton_green"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Green"
+            android:text="@string/color_green_text"
             android:textColor="@color/colorCategoryGreen" />
 
         <RadioButton
             android:id="@+id/radiobutton_blue"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Blue"
+            android:text="@string/color_blue_text"
             android:textColor="@color/colorCategoryBlue" />
 
         <RadioButton
             android:id="@+id/radiobutton_purple"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Purple"
+            android:text="@string/color_purple_text"
             android:textColor="@color/colorCategoryPurple" />
 
         <RadioButton
             android:id="@+id/radiobutton_orange"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Orange"
+            android:text="@string/color_orange_text"
             android:textColor="@color/colorCategoryOrange" />
     </RadioGroup>
 

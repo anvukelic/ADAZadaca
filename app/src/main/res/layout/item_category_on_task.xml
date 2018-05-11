@@ -10,10 +10,9 @@
         android:background="@color/colorPrimary"
         android:textColor="@color/colorTaskDate"
         android:padding="@dimen/category_on_task"
-        android:textSize="@dimen/textMinimum"
+        android:textSize="@dimen/text_minimum"
         android:layout_marginEnd="@dimen/category_on_task"
         android:textStyle="bold"
         android:textAllCaps="true"
-        android:text="Kategorija1" />
-
+        android:text="@string/lorem_ipsum_title" />
 </LinearLayout>

@@ -8,14 +8,14 @@
 
     <ImageView
         android:id="@+id/imageview_task_priority"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:layout_width="@dimen/priority_image_width"
+        android:layout_height="@dimen/priority_image_height"
         android:layout_gravity="center_vertical"
         android:src="@drawable/shape_high_priority"
         android:contentDescription="@string/task_priority" />
     <TextView
         android:id="@+id/textview_task_date"
-        android:layout_width="150dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignStart="@id/imageview_task_priority"
         android:layout_alignTop="@id/imageview_task_priority"
@@ -23,7 +23,7 @@
         android:layout_alignBottom="@id/imageview_task_priority"
         android:gravity="center"
         android:textColor="@color/colorTaskDate"
-        android:textSize="12sp"
+        android:textSize="@dimen/text_minimum"
         android:textStyle="bold"
         android:text="26.Apr" />
 
@@ -45,19 +45,19 @@
             android:id="@+id/textview_task_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Lorem ipsum"
-            android:textSize="24sp" />
+            android:hint="@string/lorem_ipsum_title"
+            android:textSize="@dimen/task_title_size" />
         <TextView
             android:id="@+id/textview_task_description"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:hint="Lorem ipsum is simply dummy text" />
+            android:hint="@string/lorem_ipsum_text" />
     </LinearLayout>
     <Switch
         android:id="@+id/switch_task_status"
-        android:switchMinWidth="50dp"
-        android:layout_width="60dp"
-        android:layout_height="60dp"
+        android:switchMinWidth="@dimen/switch_size"
+        android:layout_width="@dimen/switch_size"
+        android:layout_height="@dimen/switch_size"
         android:layout_centerInParent="true"
         android:layout_alignParentEnd="true"
         android:textOn="@string/done"

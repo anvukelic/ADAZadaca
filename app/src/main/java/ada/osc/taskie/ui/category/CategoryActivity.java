@@ -12,11 +12,8 @@ import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.widget.Toast;
 
-import com.j256.ormlite.android.apptools.OpenHelperManager;
 import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.stmt.PreparedQuery;
 import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.SelectArg;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -24,9 +21,7 @@ import java.util.List;
 import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
 import ada.osc.taskie.database.DatabaseHelper;
-import ada.osc.taskie.model.Task;
 import ada.osc.taskie.model.TaskCategory;
-import ada.osc.taskie.ui.task.TaskHelper;
 import ada.osc.taskie.model.Category;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -54,6 +49,12 @@ public class CategoryActivity extends AppCompatActivity implements CategoryDialo
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         ButterKnife.bind(this);
         setupFloatingButton();
+        getDaos();
+        setUpCategoryClickListener();
+        setUpRecyclerView();
+    }
+
+    private void getDaos() {
         try {
             databaseHelper = new DatabaseHelper(this);
             categoryDao = databaseHelper.getCategoryDao();
@@ -61,11 +62,9 @@ public class CategoryActivity extends AppCompatActivity implements CategoryDialo
         } catch (SQLException e) {
             e.printStackTrace();
         }
-        setUpTaskClickListener();
-        setUpRecyclerView();
     }
 
-    private void setUpTaskClickListener() {
+    private void setUpCategoryClickListener() {
         mListener = new CategoryClickListener() {
             @Override
             public void onClick(Category category) {
@@ -76,9 +75,9 @@ public class CategoryActivity extends AppCompatActivity implements CategoryDialo
             public boolean onLongClick(Category category) {
                 QueryBuilder<TaskCategory, String> queryBuilder = taskCategoryDao.queryBuilder();
                 try {
-                    if (queryBuilder.where().eq("category", category.getId()).query().size() > 0) {
-                        Toast.makeText(getApplicationContext(), "You can't delete category " + category.getName()
-                                + " because it has at least one task", Toast.LENGTH_SHORT).show();
+                    if (queryBuilder.where().eq(TaskCategory.TASK_CATEGORY_CATEGORY_ID, category.getId()).query().size() > 0) {
+                        Toast.makeText(getApplicationContext(), "You can't delete category '" + category.getName()
+                                + "' because it has at least one task", Toast.LENGTH_LONG).show();
                         return true;
                     }
                 } catch (SQLException e) {
@@ -131,29 +130,6 @@ public class CategoryActivity extends AppCompatActivity implements CategoryDialo
     @Override
     public void onCategoryChange(int action) {
         mAdapter.refreshData(getCategories());
-    }
-
-    private PreparedQuery<Category> categoriesForPostQuery = null;
-
-    private List<Category> lookupCategoriesForTask(Task task) throws SQLException {
-        if (categoriesForPostQuery == null) {
-            categoriesForPostQuery = makeCategoriesForTaskQuery();
-        }
-        categoriesForPostQuery.setArgumentHolderValue(0, task);
-        return categoryDao.query(categoriesForPostQuery);
-    }
-
-    private PreparedQuery<Category> makeCategoriesForTaskQuery() throws SQLException {
-        QueryBuilder<TaskCategory, String> taskCategoryQb = taskCategoryDao.queryBuilder();
-        // this time selecting for the user-id field
-        taskCategoryQb.selectColumns("category");
-        SelectArg postSelectArg = new SelectArg();
-        taskCategoryQb.where().eq("task", postSelectArg);
-        // build our outer query
-        QueryBuilder<Category, String> categoryQb = categoryDao.queryBuilder();
-        // where the user-id matches the inner query's user-id field
-        categoryQb.where().in("id", taskCategoryQb);
-        return categoryQb.prepare();
     }
 
 }

@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
 import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Category;
@@ -85,27 +86,11 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
     public void onBindViewHolder(final TaskCategoryViewHolder holder, final int position) {
         Category c = mCategories.get(position);
         holder.mName.setText(c.getName());
-        switch (c.getColor().toLowerCase()) {
-            case "red":
-                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryRed));
-                break;
-            case "green":
-                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryGreen));
-                break;
-            case "blue":
-                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryBlue));
-                break;
-            case "purple":
-                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryPurple));
-                break;
-            case "orange":
-                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryOrange));
-                break;
-        }
+        changeColorOnCategory(holder, c);
         if (mTaskId != null) {
             QueryBuilder<TaskCategory, String> queryBuilder = taskCategoryDao.queryBuilder();
             try {
-                if (queryBuilder.where().eq("task", mTaskId).and().eq("category", c.getId()).query().size() == 1) {
+                if (queryBuilder.where().eq(TaskCategory.TASK_CATEGORY_TASK_ID, mTaskId).and().eq(TaskCategory.TASK_CATEGORY_CATEGORY_ID, c.getId()).query().size() == 1) {
                     holder.mCategorySelected.setVisibility(View.VISIBLE);
                 }
             } catch (SQLException e) {
@@ -149,6 +134,27 @@ public class TaskCategoryAdapter extends RecyclerView.Adapter<TaskCategoryAdapte
             mListener.onClick(mCategories.get(getAdapterPosition()), mCategorySelected.getVisibility());
         }
 
+    }
+
+
+    private void changeColorOnCategory(TaskCategoryViewHolder holder, Category c) {
+        switch (c.getColor()) {
+            case Consts.COLOR_RED:
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryRed));
+                break;
+            case Consts.COLOR_GREEN:
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryGreen));
+                break;
+            case Consts.COLOR_BLUE:
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryBlue));
+                break;
+            case Consts.COLOR_PURPLE:
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryPurple));
+                break;
+            case Consts.COLOR_ORANGE:
+                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryOrange));
+                break;
+        }
     }
 
 }

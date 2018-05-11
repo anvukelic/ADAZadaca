@@ -9,14 +9,18 @@ import java.util.UUID;
  * Created by avukelic on 07-May-18.*/
 
 
-@DatabaseTable(tableName = "task_category")
+@DatabaseTable(tableName = TaskCategory.TASK_CATEGORY_TABLE)
 public class TaskCategory {
 
-    @DatabaseField(id = true, columnName = "id")
+    public static final String TASK_CATEGORY_TABLE = "task_category";
+    public static final String TASK_CATEGORY_ID = "id";
+    public static final String TASK_CATEGORY_TASK_ID = "task_id";
+    public static final String TASK_CATEGORY_CATEGORY_ID = "category_id";
+    @DatabaseField(id = true, columnName = TASK_CATEGORY_ID)
     private String mId;
-    @DatabaseField(columnName = "task", foreign = true)
+    @DatabaseField(columnName = TASK_CATEGORY_TASK_ID, foreign = true)
     private Task mTask;
-    @DatabaseField(columnName = "category", foreign = true)
+    @DatabaseField(columnName = TASK_CATEGORY_CATEGORY_ID, foreign = true)
     private Category mCategory;
 
     public TaskCategory() {

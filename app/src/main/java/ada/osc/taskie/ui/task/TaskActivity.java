@@ -202,12 +202,12 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
             case R.id.toolbar_task_status:
                 switch (item.getTitle().toString()) {
                     case "All tasks":
-                        item.setTitle(R.string.tasks_finished);
+                        item.setTitle(R.string.done);
                         mFilterStatusType = 1;
                         mAdapter.refreshData(getTasks());
                         break;
                     case "Done":
-                        item.setTitle(R.string.tasks_not_finished);
+                        item.setTitle(R.string.not_done);
                         mFilterStatusType = 2;
                         mAdapter.refreshData(getTasks());
                         break;

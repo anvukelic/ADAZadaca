@@ -8,14 +8,14 @@
         android:id="@+id/textview_category_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textSize="24sp"
-        android:text="Lorem ipsum" />
+        android:textSize="@dimen/category_name"
+        android:text="@string/lorem_ipsum_title" />
 
     <ImageView
         android:id="@+id/imageview_category_selected"
         android:layout_alignParentEnd="true"
         android:layout_width="wrap_content"
-        android:layout_height="30dp"
+        android:layout_height="@dimen/imageview_check_height"
         android:src="@mipmap/ic_launcher"
         android:visibility="gone"/>
 </RelativeLayout>

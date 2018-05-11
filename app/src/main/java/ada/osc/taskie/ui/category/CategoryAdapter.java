@@ -1,6 +1,7 @@
 package ada.osc.taskie.ui.category;
 
 import android.content.Context;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -10,6 +11,7 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
 import ada.osc.taskie.model.Category;
 import butterknife.BindView;
@@ -45,20 +47,20 @@ public class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Catego
     public void onBindViewHolder(final CategoryViewHolder holder, final int position) {
         Category c = mCategories.get(position);
         holder.mName.setText(c.getName());
-        switch (c.getColor().toLowerCase()) {
-            case "red":
-                holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryRed));
+        switch (c.getColor()) {
+            case Consts.COLOR_RED:
+                holder.mName.setTextColor(ContextCompat.getColor(mContext,R.color.colorCategoryRed));
                 break;
-            case "green":
+            case Consts.COLOR_GREEN:
                 holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryGreen));
                 break;
-            case "blue":
+            case Consts.COLOR_BLUE:
                 holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryBlue));
                 break;
-            case "purple":
+            case Consts.COLOR_PURPLE:
                 holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryPurple));
                 break;
-            case "orange":
+            case Consts.COLOR_ORANGE:
                 holder.mName.setTextColor(mContext.getResources().getColor(R.color.colorCategoryOrange));
                 break;
             default:

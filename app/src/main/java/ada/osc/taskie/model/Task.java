@@ -9,20 +9,28 @@ import java.util.UUID;
 /**
  * Created by avukelic on 28-Apr-18.
  */
-@DatabaseTable(tableName = "tasks")
+@DatabaseTable(tableName = Task.TASK_TABLE)
 public class Task {
 
-    @DatabaseField(columnName = "id", id = true)
+    public static final String TASK_TABLE = "tasks";
+    public static final String TASK_ID = "id";
+    public static final String TASK_TITLE = "title";
+    public static final String TASK_DESCRIPTION = "description";
+    public static final String TASK_PRIORITY = "priority";
+    public static final String TASK_DATE = "date";
+    public static final String TASK_STATUS = "status";
+
+    @DatabaseField(columnName = TASK_ID, id = true)
     private String mId;
-    @DatabaseField(columnName = "title")
+    @DatabaseField(columnName = TASK_TITLE)
     private String mTitle;
-    @DatabaseField(columnName = "description")
+    @DatabaseField(columnName = TASK_DESCRIPTION)
     private String mDescription;
-    @DatabaseField(columnName = "priority")
+    @DatabaseField(columnName = TASK_PRIORITY)
     private int mPriority;
-    @DatabaseField(columnName = "date")
+    @DatabaseField(columnName = TASK_DATE)
     private Date mDate;
-    @DatabaseField(columnName = "status")
+    @DatabaseField(columnName = TASK_STATUS)
     private boolean mDone;
 
     public Task() {

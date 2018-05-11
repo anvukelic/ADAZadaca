@@ -22,7 +22,7 @@ import ada.osc.taskie.model.TaskCategory;
 public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
 
     public static final String DATABASE_NAME = "taskie.sqlite";
-    public static final int DATABASE_VERSION = 4;
+    public static final int DATABASE_VERSION = 5;
 
     private Dao<Task, String> taskDao = null;
     private Dao<Category, String> categoryDao = null;
@@ -38,7 +38,6 @@ public class DatabaseHelper extends OrmLiteSqliteOpenHelper {
             TableUtils.createTableIfNotExists(connectionSource, Task.class);
             TableUtils.createTableIfNotExists(connectionSource, Category.class);
             TableUtils.createTableIfNotExists(connectionSource, TaskCategory.class);
-            System.out.println("test");
         } catch (SQLException e) {
             Log.e("Taskie", "Unable to create database",e);
         }

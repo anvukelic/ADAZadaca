@@ -35,9 +35,9 @@ public class TaskHelper {
         try {
             switch (filterType) {
                 case FILTER_DONE:
-                    return queryBuilder.where().eq("status", true).query();
+                    return queryBuilder.where().eq(Task.TASK_STATUS, true).query();
                 case FILTER_NOT_DONE:
-                    return queryBuilder.where().eq("status", false).query();
+                    return queryBuilder.where().eq(Task.TASK_STATUS, false).query();
                 default:
                     return queryBuilder.query();
             }
@@ -50,9 +50,9 @@ public class TaskHelper {
     private static QueryBuilder<Task, String> sortTasksByPriority(QueryBuilder<Task, String> queryBuilder, int sortType) {
         switch (sortType) {
             case SORT_ASC:
-                return queryBuilder.orderBy("priority", true);
+                return queryBuilder.orderBy(Task.TASK_PRIORITY, true);
             case SORT_DESC:
-                return queryBuilder.orderBy("priority", false);
+                return queryBuilder.orderBy(Task.TASK_PRIORITY, false);
             default:
                 return queryBuilder;
         }
@@ -67,7 +67,7 @@ public class TaskHelper {
             public void onClick(DialogInterface dialog, int which) {
                 DeleteBuilder<Task, String> deleteBuilder = taskDao.deleteBuilder();
                 try {
-                    deleteBuilder.where().eq("id", task.getId());
+                    deleteBuilder.where().eq(Task.TASK_ID, task.getId());
                     deleteBuilder.delete();
                 } catch (SQLException e) {
                     e.printStackTrace();
@@ -86,16 +86,16 @@ public class TaskHelper {
     public static void updatePriorityOnClick(Task task, Dao<Task,String> taskDao) {
         try {
             UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
-            updateBuilder.where().eq("id", task.getId());
+            updateBuilder.where().eq(Task.TASK_ID, task.getId());
             switch (task.getPriority()) {
                 case 0:
-                    updateBuilder.updateColumnValue("priority", 1);
+                    updateBuilder.updateColumnValue(Task.TASK_PRIORITY, 1);
                     break;
                 case 1:
-                    updateBuilder.updateColumnValue("priority", 2);
+                    updateBuilder.updateColumnValue(Task.TASK_PRIORITY, 2);
                     break;
                 case 2:
-                    updateBuilder.updateColumnValue("priority", 0);
+                    updateBuilder.updateColumnValue(Task.TASK_PRIORITY, 0);
                     break;
             }
             updateBuilder.update();
@@ -107,8 +107,8 @@ public class TaskHelper {
     public static void updateStatusOnSwitchChange(Task task, Dao<Task,String> taskDao) {
         try {
             UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
-            updateBuilder.where().eq("id", task.getId());
-            updateBuilder.updateColumnValue("status", !task.isDone());
+            updateBuilder.where().eq(Task.TASK_ID, task.getId());
+            updateBuilder.updateColumnValue(Task.TASK_STATUS, !task.isDone());
             updateBuilder.update();
         } catch (SQLException e) {
             e.printStackTrace();

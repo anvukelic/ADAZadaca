@@ -42,7 +42,7 @@ public class CategoryHelper {
             public void onClick(DialogInterface dialog, int which) {
                 DeleteBuilder<Category, String> deleteBuilder = categoryDao.deleteBuilder();
                 try {
-                    deleteBuilder.where().eq("id", category.getId());
+                    deleteBuilder.where().eq(Category.CATEGORY_ID, category.getId());
                     deleteBuilder.delete();
                     adapter.refreshData(getCategories(categoryDao));
                 } catch (SQLException e) {

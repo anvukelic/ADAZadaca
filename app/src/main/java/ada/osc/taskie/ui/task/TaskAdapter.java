@@ -43,8 +43,6 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     private List<Task> mTasks;
     private TaskClickListener mListener;
 
-    private List<Category> mCategories;
-
     private Context mContext;
 
     private CategoryOnTaskAdapter mAdapter;
@@ -173,15 +171,12 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     private PreparedQuery<Category> makeCategoriesForTaskQuery() throws SQLException {
         QueryBuilder<TaskCategory, String> taskCategoryQb = taskCategoryDao.queryBuilder();
-        // this time selecting for the user-id field
-        taskCategoryQb.selectColumns("category");
+        taskCategoryQb.selectColumns(TaskCategory.TASK_CATEGORY_CATEGORY_ID);
         SelectArg postSelectArg = new SelectArg();
-        taskCategoryQb.where().eq("task", postSelectArg);
+        taskCategoryQb.where().eq(TaskCategory.TASK_CATEGORY_TASK_ID, postSelectArg);
 
-        // build our outer query
         QueryBuilder<Category, String> categoryQb = categoryDao.queryBuilder();
-        // where the user-id matches the inner query's user-id field
-        categoryQb.where().in("id", taskCategoryQb);
+        categoryQb.where().in(Category.CATEGORY_ID, taskCategoryQb);
         return categoryQb.prepare();
     }
 

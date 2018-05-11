@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
 import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Category;
@@ -37,12 +38,6 @@ public class CategoryOnTaskAdapter extends RecyclerView.Adapter<CategoryOnTaskAd
         mContext = context;
     }
 
-    public void refreshData(List<Category> categories) {
-        mCategories.clear();
-        mCategories.addAll(categories);
-        notifyDataSetChanged();
-    }
-
     /**
      * View holder class
      */
@@ -50,20 +45,24 @@ public class CategoryOnTaskAdapter extends RecyclerView.Adapter<CategoryOnTaskAd
     public void onBindViewHolder(final TaskCategoryViewHolder holder, final int position) {
         Category c = mCategories.get(position);
         holder.mCategory.setText(c.getName());
-        switch (c.getColor().toLowerCase()) {
-            case "red":
+        changeColorOnCategory(holder, c);
+    }
+
+    private void changeColorOnCategory(TaskCategoryViewHolder holder, Category c) {
+        switch (c.getColor()) {
+            case Consts.COLOR_RED:
                 holder.mCategory.setBackgroundColor(mContext.getResources().getColor(R.color.colorCategoryRed));
                 break;
-            case "green":
+            case Consts.COLOR_GREEN:
                 holder.mCategory.setBackgroundColor(mContext.getResources().getColor(R.color.colorCategoryGreen));
                 break;
-            case "blue":
+            case Consts.COLOR_BLUE:
                 holder.mCategory.setBackgroundColor(mContext.getResources().getColor(R.color.colorCategoryBlue));
                 break;
-            case "purple":
+            case Consts.COLOR_PURPLE:
                 holder.mCategory.setBackgroundColor(mContext.getResources().getColor(R.color.colorCategoryPurple));
                 break;
-            case "orange":
+            case Consts.COLOR_ORANGE:
                 holder.mCategory.setBackgroundColor(mContext.getResources().getColor(R.color.colorCategoryOrange));
                 break;
             default:

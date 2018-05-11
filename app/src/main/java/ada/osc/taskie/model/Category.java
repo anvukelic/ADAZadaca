@@ -1,23 +1,28 @@
 package ada.osc.taskie.model;
 
-import android.graphics.Color;
 
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
 import java.util.UUID;
 
+
 /**
  * Created by avukelic on 07-May-18.
  */
-@DatabaseTable(tableName = "categories")
+@DatabaseTable(tableName = Category.CATEGORY_TABLE)
 public class Category {
 
-    @DatabaseField(id = true, columnName = "id")
+    public static final String CATEGORY_TABLE = "categories";
+    public static final String CATEGORY_ID = "id";
+    public static final String CATEGORY_NAME = "name";
+    public static final String CATEGORY_COLOR = "color";
+
+    @DatabaseField(id = true, columnName = CATEGORY_ID)
     private String mId;
-    @DatabaseField(columnName = "name")
+    @DatabaseField(columnName = CATEGORY_NAME)
     private String mName;
-    @DatabaseField(columnName = "color")
+    @DatabaseField(columnName = CATEGORY_COLOR)
     private String mColor;
 
     public Category() {
