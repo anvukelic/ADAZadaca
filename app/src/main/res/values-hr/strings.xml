@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Taskie</string>
+    <string name="action_settings">Postavke</string>
+    <string name="add_newtask">Dodaj zadatak</string>
+    <string name="cancel">Poništi</string>
+    <string name="newtask_title">Naziv</string>
+    <string name="newtask_description">Opis</string>
+    <string name="title_field_empty">Naziv ne može biti prazan</string>
+    <string name="description_field_empty">Opis ne može biti prazan</string>
+    <string name="wrong_date">Datum ne može biti u prošlosti</string>
+    <string name="update_task">Izmjeni</string>
+    <string name="all_tasks">Svi zadaci</string>
+    <string name="tasks_finished">Dovršen</string>
+    <string name="tasks_not_finished">Nije dovršen</string>
+    <string name="task_status_done">Dovršen</string>
+    <string name="check_as_not_done">Označi kao nije dovršen</string>
+    <string name="check_as_done">Označi kao dovršen</string>
+    <string name="action_update">izmjeni</string>
+    <string name="action_remove">Obriši zadatak</string>
+    <string name="too_long_title">Naziv ne može biti duži od 30 slova</string>
+    <string name="too_long_description">Opis ne može biti duži od 150 znakova</string>
+    <string name="done">Dovršen</string>
+    <string name="not_done">Nije dovršen</string>
+    <string name="task_priority">Prioritet zadatka</string>
+    <string name="categories">Kategorije</string>
+    <string name="add_category">Dodaj kategoriju</string>
+    <string name="category_name">Naziv</string>
+    <string name="name_field_empty">Naziv ne može biti prazan</string>
+    <string name="too_long_name">Naziv ne može biti duži od 30 znakova</string>
+    <string name="color_red_text">Crvena</string>
+    <string name="color_green_text">Zelena</string>
+    <string name="color_blue_text">Plava</string>
+    <string name="color_purple_text">Ljubičasta</string>
+    <string name="color_orange_text">Narančasta</string>
+</resources>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <RelativeLayout
+        android:padding="@dimen/screen_margin"
+        android:id="@+id/view_background"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@color/colorPrimary">
+        <ImageView
+            android:id="@+id/delete_icon"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:src="@drawable/ic_favorite_border_black_24dp" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="10dp"
+            android:layout_toEndOf="@id/delete_icon"
+            android:text="@string/favorite"
+            android:textColor="#fff"
+            android:textSize="13dp" />
+    </RelativeLayout>
+    <RelativeLayout
+        android:padding="@dimen/screen_margin"
+        android:id="@+id/view_foreground"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#ffffff">
+
+        <ImageView
+            android:id="@+id/imageview_task_priority"
+            android:layout_width="@dimen/priority_image_width"
+            android:layout_height="@dimen/priority_image_height"
+            android:layout_gravity="center_vertical"
+            android:contentDescription="@string/task_priority"
+            android:src="@drawable/shape_high_priority" />
+
+        <TextView
+            android:id="@+id/textview_task_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignBottom="@id/imageview_task_priority"
+            android:layout_alignEnd="@id/imageview_task_priority"
+            android:layout_alignStart="@id/imageview_task_priority"
+            android:layout_alignTop="@id/imageview_task_priority"
+            android:gravity="center"
+            android:text="26.Apr"
+            android:textColor="@color/colorTaskDate"
+            android:textSize="@dimen/text_minimum"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/screen_margin"
+            android:layout_toEndOf="@+id/imageview_task_priority"
+            android:layout_toStartOf="@+id/switch_task_status"
+            android:orientation="vertical"
+            tools:ignore="RtlSymmetry">
+
+            <TextView
+                android:id="@+id/textview_task_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/lorem_ipsum_title"
+                android:textSize="@dimen/task_title_size" />
+
+            <TextView
+                android:id="@+id/textview_task_description"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:hint="@string/lorem_ipsum_text" />
+        </LinearLayout>
+
+        <Switch
+            android:id="@+id/switch_task_status"
+            android:layout_width="@dimen/switch_size"
+            android:layout_height="@dimen/switch_size"
+            android:layout_alignParentEnd="true"
+            android:layout_centerInParent="true"
+            android:switchMinWidth="@dimen/switch_size"
+            android:textOff="@string/not_done"
+            android:textOn="@string/done" />
+    </RelativeLayout>
+
+</FrameLayout>
