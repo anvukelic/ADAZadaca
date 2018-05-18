@@ -31,4 +31,7 @@
     <string name="lorem_ipsum_title" translatable="false">Lorem ipsum</string>
     <string name="lorem_ipsum_text" translatable="false">Lorem ipsum is simply dummy text</string>
     <string name="favorite">favorite</string>
+
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>

@@ -286,8 +286,7 @@ public class TaskDialogFragment extends DialogFragment {
         setupPrioritySpinner();
         /*QueryBuilder<Task, String> queryBuilder = taskDao.queryBuilder();
         taskForUpdate = taskDao.queryForFirst(queryBuilder.where().eq(Task.TASK_ID, taskId).prepare());*/
-        Gson gson = new Gson();
-        taskForUpdate = gson.fromJson(getArguments().getString("task"),Task.class);
+        taskForUpdate = (Task) getArguments().getSerializable("task");
         mTitle.setText(taskForUpdate.getTitle());
         mDescription.setText(taskForUpdate.getDescription());
         mPriority.setSelection(taskForUpdate.getPriority()-1);
@@ -310,7 +309,7 @@ public class TaskDialogFragment extends DialogFragment {
         postNewTaskCall.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                if (response.isSuccessful()) {
+                if(response.isSuccessful()){
                     mListener.onTaskChange(action);
                 }
             }
@@ -332,7 +331,7 @@ public class TaskDialogFragment extends DialogFragment {
         postUpdateTaskCall.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                if (response.isSuccessful()) {
+                if(response.isSuccessful()){
                     mListener.onTaskChange(action);
                 }
             }

@@ -28,11 +28,13 @@ public interface ApiService {
     Call<Task> updateTask(@Header("authorization") String header, @Body Task task);
 
     @POST("api/note/delete")
-    Call<Void> deleteTask(@Header("authorization") String header, @Query("noteId") String noteId);
+    Call<Object> deleteTask(@Header("authorization") String header, @Query("id") String noteId);
 
     @POST("api/note/favorite")
-    Call<Void> faveTask(@Header("authorization") String header, @Query("noteId") String noteId);
+    Call<Object> faveTask(@Header("authorization") String header, @Query("id") String noteId);
 
     @GET("api/note/")
     Call<TaskList> getTasks(@Header("authorization") String header);
+    @GET("api/note/favorite")
+    Call<TaskList> getFavoriteTasks(@Header("authorization") String header);
 }

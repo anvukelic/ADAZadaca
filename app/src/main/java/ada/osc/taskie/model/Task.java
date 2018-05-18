@@ -5,6 +5,7 @@ import com.google.gson.annotations.SerializedName;
 import com.j256.ormlite.field.DatabaseField;
 import com.j256.ormlite.table.DatabaseTable;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.UUID;
 
@@ -12,7 +13,7 @@ import java.util.UUID;
  * Created by avukelic on 28-Apr-18.
  */
 @DatabaseTable(tableName = Task.TASK_TABLE)
-public class Task {
+public class Task implements Serializable {
 
     public static final String TASK_TABLE = "tasks";
     public static final String TASK_ID = "id";
@@ -22,13 +23,13 @@ public class Task {
     public static final String TASK_DATE = "date";
     public static final String TASK_STATUS = "status";
 
+    @DatabaseField(columnName = TASK_ID, id = true)
     @Expose
     @SerializedName("id")
-    @DatabaseField(columnName = TASK_ID, id = true)
     private String mId;
+    @DatabaseField(columnName = TASK_TITLE)
     @Expose
     @SerializedName("title")
-    @DatabaseField(columnName = TASK_TITLE)
     private String mTitle;
     @DatabaseField(columnName = TASK_DESCRIPTION)
     @Expose
@@ -50,6 +51,14 @@ public class Task {
 
     public Task(String mTitle, String mDescription, int mPriority, String mDate) {
         mId = UUID.randomUUID().toString();
+        this.mTitle = mTitle;
+        this.mDescription = mDescription;
+        this.mPriority = mPriority;
+        this.mDate = mDate;
+        mCompleted = false;
+    }
+    public Task(String mId, String mTitle, String mDescription, int mPriority, String mDate){
+        this.mId = mId;
         this.mTitle = mTitle;
         this.mDescription = mDescription;
         this.mPriority = mPriority;
