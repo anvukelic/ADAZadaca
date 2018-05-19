@@ -33,8 +33,15 @@ public interface ApiService {
     @POST("api/note/favorite")
     Call<Object> faveTask(@Header("authorization") String header, @Query("id") String noteId);
 
+    @POST("api/note/complete")
+    Call<Object> changeTaskStatus(@Header("authorization") String header, @Query("noteId") String noteId);
+
     @GET("api/note/")
     Call<TaskList> getTasks(@Header("authorization") String header);
+
     @GET("api/note/favorite")
     Call<TaskList> getFavoriteTasks(@Header("authorization") String header);
+
+    @GET("api/note/completed")
+    Call<TaskList> getCompletedTasks(@Header("authorization") String header);
 }

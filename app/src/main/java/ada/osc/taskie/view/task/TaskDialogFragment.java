@@ -17,30 +17,21 @@ import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
-import com.google.gson.Gson;
-import com.j256.ormlite.dao.Dao;
-import com.j256.ormlite.stmt.QueryBuilder;
-import com.j256.ormlite.stmt.UpdateBuilder;
-
-import java.sql.SQLException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
 
+import ada.osc.taskie.App;
 import ada.osc.taskie.Consts;
 import ada.osc.taskie.R;
-import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Task;
-import ada.osc.taskie.model.TaskList;
-import ada.osc.taskie.networking.ApiService;
-import ada.osc.taskie.networking.RetrofitUtil;
 import ada.osc.taskie.util.SharedPrefsUtil;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * Created by avukelic on 28-Apr-18.
@@ -55,11 +46,8 @@ public class TaskDialogFragment extends DialogFragment {
     public static final String PRIORITY_PREF = "priorityOnCreate";
 
     private Task taskForUpdate;
-    Dao<Task, String> taskDao;
 
     public OnTaskChangeListener mListener;
-
-    private DatabaseHelper databaseHelper = null;
 
     @BindView(R.id.edittext_task_dialog_title)
     EditText mTitle;
@@ -79,19 +67,9 @@ public class TaskDialogFragment extends DialogFragment {
         View view = inflater.inflate(R.layout.dialog_task, null);
         ButterKnife.bind(this, view);
         action = getArguments().getInt("action");
-        getDaos();
         checkAction();
         setUpCalendarView();
         return createAlertDialog(view);
-    }
-
-    private void getDaos() {
-        try {
-            databaseHelper = new DatabaseHelper(getActivity());
-            taskDao = databaseHelper.getTaskDao();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
     }
 
     private void setUpCalendarView() {
@@ -109,9 +87,9 @@ public class TaskDialogFragment extends DialogFragment {
     //Check if is create or update
     private void checkAction() {
         if (action == Consts.CREATE_ACTION) {
-            createAction();
+            createDialogFragment();
         } else {
-            updateAction(getArguments().getString("taskId"));
+            updateDialogFragment();
         }
     }
 
@@ -175,39 +153,21 @@ public class TaskDialogFragment extends DialogFragment {
     private void doActionOnPositiveClose(Boolean wantToCloseDialog, String title, String description, int priority, Date date) {
         if (wantToCloseDialog) {
             if (action == Consts.CREATE_ACTION) {
-                Task task = new Task(title,description,priority,formatDate(date));
+                Task task = new Task(title,description,priority,String.valueOf(date.getTime()));
                 getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE)
                         .edit().putInt(PRIORITY_PREF, priority).apply();
                 createNewTask(task);
-                //taskDao.create(task);
             } else {
                 taskForUpdate.setTitle(title);
                 taskForUpdate.setDescription(description);
                 taskForUpdate.setPriority(priority);
-                taskForUpdate.setDate(formatDate(date));
+                taskForUpdate.setDate(String.valueOf(date.getTime()));
                 updateTask(taskForUpdate);
-                //updateTask(taskForUpdate.getId(), title, description, priority, date);
             }
-            mListener.onTaskChange(action);
             getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE)
                     .edit().putInt(PRIORITY_PREF, priority).apply();
             getDialog().dismiss();
         }
-    }
-
-    private void updateTask(String taskId, String title, String description, int priority, Date date) {
-        try {
-            UpdateBuilder<Task, String> updateBuilder = taskDao.updateBuilder();
-            updateBuilder.where().eq(Task.TASK_ID, taskId);
-            updateBuilder.updateColumnValue(Task.TASK_TITLE, title);
-            updateBuilder.updateColumnValue(Task.TASK_DESCRIPTION, description);
-            updateBuilder.updateColumnValue(Task.TASK_PRIORITY, priority);
-            updateBuilder.updateColumnValue(Task.TASK_DATE, date);
-            updateBuilder.update();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-
     }
 
     //Check if all fields are populated
@@ -276,20 +236,19 @@ public class TaskDialogFragment extends DialogFragment {
     }
 
     //Create dialog with empty fields
-    private void createAction() {
+    private void createDialogFragment() {
         setupPrioritySpinner();
         mPriority.setSelection(getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE).getInt(PRIORITY_PREF, 0)-1);
     }
 
     //Create dialog with task data in fields
-    private void updateAction(String taskId) {
+    private void updateDialogFragment() {
         setupPrioritySpinner();
-        /*QueryBuilder<Task, String> queryBuilder = taskDao.queryBuilder();
-        taskForUpdate = taskDao.queryForFirst(queryBuilder.where().eq(Task.TASK_ID, taskId).prepare());*/
         taskForUpdate = (Task) getArguments().getSerializable("task");
         mTitle.setText(taskForUpdate.getTitle());
         mDescription.setText(taskForUpdate.getDescription());
         mPriority.setSelection(taskForUpdate.getPriority()-1);
+        mDate.setDate(Long.parseLong(taskForUpdate.getDate()));
     }
 
     private void removeFocusFromEditText() {
@@ -299,10 +258,7 @@ public class TaskDialogFragment extends DialogFragment {
     }
 
     private void createNewTask(final Task taskToSave) {
-        Retrofit retrofit = RetrofitUtil.createRetrofit();
-        ApiService apiService = retrofit.create(ApiService.class);
-
-        Call postNewTaskCall = apiService
+        Call postNewTaskCall = App.getApiService()
                 .postNewTask(SharedPrefsUtil.getPreferencesField(getActivity()
                         , SharedPrefsUtil.TOKEN), taskToSave);
 
@@ -320,11 +276,9 @@ public class TaskDialogFragment extends DialogFragment {
             }
         });
     }
-    private void updateTask(final Task taskToUpdate) {
-        Retrofit retrofit = RetrofitUtil.createRetrofit();
-        ApiService apiService = retrofit.create(ApiService.class);
 
-        Call postUpdateTaskCall = apiService
+    private void updateTask(final Task taskToUpdate) {
+        Call postUpdateTaskCall = App.getApiService()
                 .updateTask(SharedPrefsUtil.getPreferencesField(getActivity()
                         , SharedPrefsUtil.TOKEN), taskToUpdate);
 
@@ -344,8 +298,5 @@ public class TaskDialogFragment extends DialogFragment {
 
     }
 
-    private String formatDate(Date date) {
-        SimpleDateFormat sd = new SimpleDateFormat("dd.\nMMM");
-        return sd.format(date);
-    }
+
 }

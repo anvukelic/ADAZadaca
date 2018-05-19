@@ -2,7 +2,6 @@ package ada.osc.taskie.view.task.fragments;
 
 
 import android.app.AlertDialog;
-import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
@@ -17,29 +16,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import ada.osc.taskie.Consts;
+import ada.osc.taskie.App;
 import ada.osc.taskie.R;
 import ada.osc.taskie.model.Task;
 import ada.osc.taskie.model.TaskList;
-import ada.osc.taskie.networking.ApiService;
-import ada.osc.taskie.networking.RetrofitUtil;
 import ada.osc.taskie.util.RecyclerItemTouchHelper;
 import ada.osc.taskie.util.SharedPrefsUtil;
+import ada.osc.taskie.view.task.OnItemLongClickListener;
 import ada.osc.taskie.view.task.TaskActivity;
 import ada.osc.taskie.view.task.TaskAdapter;
 import ada.osc.taskie.view.task.TaskClickListener;
-import ada.osc.taskie.view.task.TaskDialogFragment;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
-import retrofit2.Retrofit;
 
 /**
  * A simple {@link Fragment} subclass.
  */
-public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
+public class AllTasksFragment extends Fragment implements RecyclerItemTouchHelper.RecyclerItemTouchHelperListener {
 
 
     public AllTasksFragment() {
@@ -50,7 +46,11 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
     @BindView(R.id.recycler_view_tasks)
     RecyclerView mTasksRecyclerView;
     private TaskAdapter mTaskAdapter;
+
     TaskClickListener mListener;
+    OnItemLongClickListener onItemLongClickListener;
+
+    OnItemUpdateListener taskUpdateListener;
 
 
     @Override
@@ -67,13 +67,18 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
         setUpTaskClickListener();
         setUpTaskRecyclerView();
         setUpTaskSwipe();
-        ((TaskActivity)getActivity()).setFragmentRefreshListener(new FragmentRefreshListener() {
+        setUpRefreshListener();
+        getTasks();
+    }
+
+    //Refresh list after update or create
+    private void setUpRefreshListener() {
+        ((TaskActivity) getActivity()).setFragmentRefreshListener(new FragmentRefreshListener() {
             @Override
             public void onCreateRefresh() {
-                getTasksFromServer();
+                getTasks();
             }
         });
-        getTasksFromServer();
     }
 
     private void setUpTaskSwipe() {
@@ -83,38 +88,62 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
 
     //RecyclerView and item actions
     private void setUpTaskRecyclerView() {
-        mTaskAdapter = new TaskAdapter(mListener);
+        mTaskAdapter = new TaskAdapter(mListener,onItemLongClickListener, true);
         RecyclerView.LayoutManager llm = new LinearLayoutManager(getActivity());
         mTasksRecyclerView.setLayoutManager(llm);
         mTasksRecyclerView.setItemAnimator(new DefaultItemAnimator());
         mTasksRecyclerView.setAdapter(mTaskAdapter);
-        getTasksFromServer();
+        getTasks();
     }
+
     private void setUpTaskClickListener() {
+        onItemLongClickListener = new OnItemLongClickListener() {
+            @Override
+            public boolean deleteTask(Task task) {
+                askForDeleteConfirmation(task);
+                return true;
+            }
+        };
+
         mListener = new TaskClickListener() {
             @Override
             public void onClick(Task task) {
-                showTaskDialogFragment(Consts.UPDATE_ACTION, task);
-            }
-
-            @Override
-            public boolean onLongClick(Task task) {
-                askForDeleteConfirmation(task);
-                return true;
+                taskUpdateListener.taskUpdate(task);
             }
 
             @Override
             public void onPriorityChangeClick(Task task) {
-                /*TaskHelper.updatePriorityOnClick(task, taskDao);
-                mTaskAdapter.refreshData(getTasks());*/
+                if(!task.isDone()){
+                switch (task.getPriority()) {
+                    case 1:
+                        task.setPriority(2);
+                        break;
+                    case 2:
+                        task.setPriority(3);
+                        break;
+                    case 3:
+                        task.setPriority(1);
+                        break;
+                }
+                changeTaskPriority(task);}
             }
 
             @Override
             public void onStatusSwitchChange(Task task) {
-                /*TaskHelper.updateStatusOnSwitchChange(task, taskDao);*/
+                changeTaskStatus(task);
+                getTasks();
             }
-
         };
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        try {
+            taskUpdateListener = (OnItemUpdateListener) getActivity();
+        } catch (ClassCastException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -125,10 +154,8 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
 
     //Server side actions with tasks
     //Get all tasks
-    private void getTasksFromServer() {
-        Retrofit retrofit = RetrofitUtil.createRetrofit();
-        ApiService apiService = retrofit.create(ApiService.class);
-        Call<TaskList> taskListCall = apiService
+    private void getTasks() {
+        Call<TaskList> taskListCall = App.getApiService()
                 .getTasks(SharedPrefsUtil.getPreferencesField(getActivity()
                         , SharedPrefsUtil.TOKEN));
         taskListCall.enqueue(new Callback<TaskList>() {
@@ -146,15 +173,14 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
     }
 
     //Delete
-    private void askForDeleteConfirmation(final Task task){
+    private void askForDeleteConfirmation(final Task task) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setMessage("Are you sure you want to delete '" + task.getTitle() + "' task");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                System.out.println(task.getId());
                 deleteTaskOnServer(task.getId());
-                getTasksFromServer();
+                getTasks();
             }
         }).setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
@@ -164,15 +190,14 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
         AlertDialog dialog = builder.create();
         dialog.show();
     }
+
     private void deleteTaskOnServer(String taskId) {
-        Retrofit retrofit = RetrofitUtil.createRetrofit();
-        ApiService apiService = retrofit.create(ApiService.class);
-        Call deleteTaskCall = apiService.deleteTask(SharedPrefsUtil.getPreferencesField(getActivity()
+        Call deleteTaskCall = App.getApiService().deleteTask(SharedPrefsUtil.getPreferencesField(getActivity()
                 , SharedPrefsUtil.TOKEN), taskId);
         deleteTaskCall.enqueue(new Callback() {
             @Override
             public void onResponse(Call call, Response response) {
-                getTasksFromServer();
+                getTasks();
                 Toast.makeText(getActivity(), "Task deleted", Toast.LENGTH_SHORT).show();
             }
 
@@ -182,12 +207,10 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
         });
 
     }
+
     //Activate on swipe right, make swiped item favorite
     private void makeTaskFavorite(Task task) {
-        Retrofit retrofit = RetrofitUtil.createRetrofit();
-        ApiService apiService = retrofit.create(ApiService.class);
-
-        Call faveTaskCall = apiService.faveTask(SharedPrefsUtil.getPreferencesField(getActivity()
+        Call faveTaskCall = App.getApiService().faveTask(SharedPrefsUtil.getPreferencesField(getActivity()
                 , SharedPrefsUtil.TOKEN), task.getId());
         faveTaskCall.enqueue(new Callback() {
             @Override
@@ -200,18 +223,38 @@ public class AllTasksFragment extends Fragment implements  RecyclerItemTouchHelp
             }
         });
     }
-    private void showTaskDialogFragment(int action, Task task) {
-        DialogFragment createTaskDialogFragment = new TaskDialogFragment();
-        Bundle args = new Bundle();
-        args.putInt("action", action);
-        if (action == Consts.UPDATE_ACTION) {
-            System.out.println(task.getId());
-            args.putSerializable("task", task);
-        }
-        createTaskDialogFragment.setArguments(args);
-        createTaskDialogFragment.show(getActivity().getFragmentManager(), TaskActivity.CREATE_TASK_TAG);
+
+    private void changeTaskPriority(Task task) {
+        Call postUpdateTaskCall = App.getApiService()
+                .updateTask(SharedPrefsUtil.getPreferencesField(getActivity()
+                        , SharedPrefsUtil.TOKEN), task);
+        postUpdateTaskCall.enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) {
+                if (response.isSuccessful()) {
+                    getTasks();
+                }
+            }
+
+            @Override
+            public void onFailure(Call call, Throwable t) {
+            }
+        });
     }
 
+    private void changeTaskStatus(Task task) {
+        Call changeStatusCall = App.getApiService().changeTaskStatus(SharedPrefsUtil.getPreferencesField(getActivity()
+                , SharedPrefsUtil.TOKEN), task.getId());
+        changeStatusCall.enqueue(new Callback() {
+            @Override
+            public void onResponse(Call call, Response response) {
+                getTasks();
+            }
 
+            @Override
+            public void onFailure(Call call, Throwable t) {
+            }
+        });
+    }
 
 }

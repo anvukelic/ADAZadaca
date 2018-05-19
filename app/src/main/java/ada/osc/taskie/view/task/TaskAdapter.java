@@ -1,11 +1,11 @@
 package ada.osc.taskie.view.task;
 
-import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -16,7 +16,6 @@ import java.util.Date;
 import java.util.List;
 
 import ada.osc.taskie.R;
-import ada.osc.taskie.database.DatabaseHelper;
 import ada.osc.taskie.model.Task;
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -29,9 +28,19 @@ import butterknife.OnLongClick;
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
     private List<Task> mTasks;
     private TaskClickListener mListener;
+    private OnItemLongClickListener mLongClickListener;
+    private boolean allTasks;
 
-    public TaskAdapter(TaskClickListener listener) {
+
+    public TaskAdapter(TaskClickListener listener,OnItemLongClickListener onItemLongClickListener, boolean allTasks) {
         mListener = listener;
+        mLongClickListener = onItemLongClickListener;
+        this.allTasks = allTasks;
+        mTasks = new ArrayList<>();
+    }
+
+    public TaskAdapter(OnItemLongClickListener onItemLongClickListener){
+        mLongClickListener = onItemLongClickListener;
         mTasks = new ArrayList<>();
     }
 
@@ -44,27 +53,33 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     /**
      * View holder class
      */
-
-
     @Override
     public void onBindViewHolder(final TaskViewHolder holder, final int position) {
         Task t = mTasks.get(position);
         holder.mTitle.setText(t.getTitle());
         holder.mDescription.setText(t.getDescription());
         switch (t.getPriority()) {
-            case 0:
+            case 1:
                 holder.mPrioritiy.setImageResource(R.drawable.shape_low_priority);
                 break;
-            case 1:
+            case 2:
                 holder.mPrioritiy.setImageResource(R.drawable.shape_medium_priority);
                 break;
-            case 2:
+            case 3:
                 holder.mPrioritiy.setImageResource(R.drawable.shape_high_priority);
         }
-        holder.mDate.setText(t.getDate());
-        holder.mStatus.setChecked(t.isDone());
+        holder.mDate.setText(formatDate(new Date(Long.parseLong(t.getDate()))));
+        if (allTasks) {
+            holder.mRemoveItem.setVisibility(View.GONE);
+        } else {
+            holder.mFavoriteItem.setVisibility(View.GONE);
+        }
+        if (t.isDone()) {
+            holder.mStatus.setVisibility(View.GONE);
+        } else {
+            holder.mStatus.setVisibility(View.VISIBLE);
+        }
     }
-
 
 
     @Override
@@ -72,7 +87,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         return mTasks.size();
     }
 
-    public Task getItem(int position){
+    public Task getItem(int position) {
         return mTasks.get(position);
     }
 
@@ -85,7 +100,7 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
     public TaskViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View v = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.item_task, parent, false);
-        return new TaskViewHolder(v, mListener);
+        return new TaskViewHolder(v);
     }
 
     public class TaskViewHolder extends RecyclerView.ViewHolder {
@@ -103,20 +118,25 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         public RelativeLayout mViewBackground;
         @BindView(R.id.view_foreground)
         public RelativeLayout mViewForeground;
+        @BindView(R.id.favorite_item)
+        LinearLayout mFavoriteItem;
+        @BindView(R.id.remove_item)
+        LinearLayout mRemoveItem;
 
 
-        public TaskViewHolder(View view, TaskClickListener taskClickListener) {
+        public TaskViewHolder(View view) {
             super(view);
             ButterKnife.bind(this, view);
         }
 
         @OnClick
-        public void onTaskClick(){
+        public void onTaskClick() {
             mListener.onClick(mTasks.get(getAdapterPosition()));
         }
+
         @OnLongClick
-        public boolean onLongClick(){
-            return mListener.onLongClick(mTasks.get(getAdapterPosition()));
+        public boolean onLongClick() {
+            return mLongClickListener.deleteTask(mTasks.get(getAdapterPosition()));
         }
 
         @OnClick(R.id.imageview_task_priority)
@@ -125,10 +145,13 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
         }
 
         @OnClick(R.id.switch_task_status)
-        public void changeStatusOnSwitch(){
+        public void changeStatusOnSwitch() {
             mListener.onStatusSwitchChange(mTasks.get(getAdapterPosition()));
         }
     }
-
+    private String formatDate(Date date) {
+        SimpleDateFormat sd = new SimpleDateFormat("dd.\nMMM");
+        return sd.format(date);
+    }
 
 }

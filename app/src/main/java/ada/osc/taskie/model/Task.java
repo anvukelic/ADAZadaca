@@ -2,17 +2,14 @@ package ada.osc.taskie.model;
 
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
-import com.j256.ormlite.field.DatabaseField;
-import com.j256.ormlite.table.DatabaseTable;
 
 import java.io.Serializable;
-import java.util.Date;
 import java.util.UUID;
 
 /**
  * Created by avukelic on 28-Apr-18.
  */
-@DatabaseTable(tableName = Task.TASK_TABLE)
+
 public class Task implements Serializable {
 
     public static final String TASK_TABLE = "tasks";
@@ -23,27 +20,24 @@ public class Task implements Serializable {
     public static final String TASK_DATE = "date";
     public static final String TASK_STATUS = "status";
 
-    @DatabaseField(columnName = TASK_ID, id = true)
+
     @Expose
     @SerializedName("id")
     private String mId;
-    @DatabaseField(columnName = TASK_TITLE)
     @Expose
     @SerializedName("title")
     private String mTitle;
-    @DatabaseField(columnName = TASK_DESCRIPTION)
     @Expose
     @SerializedName("content")
     private String mDescription;
-    @DatabaseField(columnName = TASK_PRIORITY)
     @Expose
     @SerializedName("taskPriority")
     private int mPriority;
-    @DatabaseField(columnName = TASK_DATE)
     @Expose
     @SerializedName("dueDate")
     private String mDate;
-    @DatabaseField(columnName = TASK_STATUS)
+    @Expose
+    @SerializedName("isCompleted")
     private boolean mCompleted;
 
     public Task() {

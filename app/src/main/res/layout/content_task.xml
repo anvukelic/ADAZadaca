@@ -16,16 +16,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         app:tabMode="fixed" />
-    <Spinner
-        android:layout_margin="@dimen/screen_margin"
-        android:id="@+id/spinner_task_priority"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:entries="@array/prirority_sort_type_list"/>
-    <android.support.v4.view.ViewPager
+    <FrameLayout
         android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
 </LinearLayout>
