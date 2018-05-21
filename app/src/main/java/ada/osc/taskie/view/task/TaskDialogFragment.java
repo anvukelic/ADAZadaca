@@ -5,6 +5,8 @@ import android.app.Dialog;
 import android.app.DialogFragment;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.view.LayoutInflater;
@@ -39,7 +41,7 @@ import retrofit2.Response;
 public class TaskDialogFragment extends DialogFragment {
 
     public interface OnTaskChangeListener {
-        void onTaskChange(int action);
+        void onTaskChange(int action, Task task);
     }
 
     public static final String TASK_PREFS = "TaskiePrefs";
@@ -141,7 +143,7 @@ public class TaskDialogFragment extends DialogFragment {
                 Boolean wantToCloseDialog;
                 String title = mTitle.getText().toString();
                 String description = mTitle.getText().toString();
-                int priority = mPriority.getSelectedItemPosition()+1;
+                int priority = mPriority.getSelectedItemPosition() + 1;
                 Date date = selectedDate.getTime();
                 wantToCloseDialog = !checkFields(title, description);
                 doActionOnPositiveClose(wantToCloseDialog, title, description, priority, date);
@@ -153,7 +155,7 @@ public class TaskDialogFragment extends DialogFragment {
     private void doActionOnPositiveClose(Boolean wantToCloseDialog, String title, String description, int priority, Date date) {
         if (wantToCloseDialog) {
             if (action == Consts.CREATE_ACTION) {
-                Task task = new Task(title,description,priority,String.valueOf(date.getTime()));
+                Task task = new Task(title, description, priority, String.valueOf(date.getTime()));
                 getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE)
                         .edit().putInt(PRIORITY_PREF, priority).apply();
                 createNewTask(task);
@@ -238,7 +240,7 @@ public class TaskDialogFragment extends DialogFragment {
     //Create dialog with empty fields
     private void createDialogFragment() {
         setupPrioritySpinner();
-        mPriority.setSelection(getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE).getInt(PRIORITY_PREF, 0)-1);
+        mPriority.setSelection(getActivity().getSharedPreferences(TASK_PREFS, Context.MODE_PRIVATE).getInt(PRIORITY_PREF, 0) - 1);
     }
 
     //Create dialog with task data in fields
@@ -247,7 +249,7 @@ public class TaskDialogFragment extends DialogFragment {
         taskForUpdate = (Task) getArguments().getSerializable("task");
         mTitle.setText(taskForUpdate.getTitle());
         mDescription.setText(taskForUpdate.getDescription());
-        mPriority.setSelection(taskForUpdate.getPriority()-1);
+        mPriority.setSelection(taskForUpdate.getPriority() - 1);
         mDate.setDate(Long.parseLong(taskForUpdate.getDate()));
     }
 
@@ -258,45 +260,55 @@ public class TaskDialogFragment extends DialogFragment {
     }
 
     private void createNewTask(final Task taskToSave) {
-        Call postNewTaskCall = App.getApiService()
-                .postNewTask(SharedPrefsUtil.getPreferencesField(getActivity()
-                        , SharedPrefsUtil.TOKEN), taskToSave);
-
-        postNewTaskCall.enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                if(response.isSuccessful()){
-                    mListener.onTaskChange(action);
+        if (isNetworkAvailable()) {
+            Call postNewTaskCall = App.getApiService()
+                    .postNewTask(SharedPrefsUtil.getPreferencesField(getActivity()
+                            , SharedPrefsUtil.TOKEN), taskToSave);
+            postNewTaskCall.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    if (response.isSuccessful()) {
+                        mListener.onTaskChange(action, taskToSave);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-
-            }
-        });
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void updateTask(final Task taskToUpdate) {
-        Call postUpdateTaskCall = App.getApiService()
-                .updateTask(SharedPrefsUtil.getPreferencesField(getActivity()
-                        , SharedPrefsUtil.TOKEN), taskToUpdate);
-
-        postUpdateTaskCall.enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                if(response.isSuccessful()){
-                    mListener.onTaskChange(action);
+        if (isNetworkAvailable()) {
+            Call postUpdateTaskCall = App.getApiService()
+                    .updateTask(SharedPrefsUtil.getPreferencesField(getActivity()
+                            , SharedPrefsUtil.TOKEN), taskToUpdate);
+            postUpdateTaskCall.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    if (response.isSuccessful()) {
+                        mListener.onTaskChange(action, taskToUpdate);
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-
-            }
-        });
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
 
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
 
 }

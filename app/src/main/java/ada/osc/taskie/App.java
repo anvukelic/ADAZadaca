@@ -1,6 +1,9 @@
 package ada.osc.taskie;
 
 import android.app.Application;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 
 import ada.osc.taskie.networking.ApiService;
 import ada.osc.taskie.networking.RetrofitUtil;
@@ -24,4 +27,5 @@ public class App extends Application {
     public static ApiService getApiService() {
         return apiService;
     }
+
 }

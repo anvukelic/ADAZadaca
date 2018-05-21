@@ -4,6 +4,8 @@ package ada.osc.taskie.view.task.fragments;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -13,7 +15,6 @@ import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Toast;
 
 import ada.osc.taskie.App;
@@ -23,7 +24,6 @@ import ada.osc.taskie.model.TaskList;
 import ada.osc.taskie.util.SharedPrefsUtil;
 import ada.osc.taskie.view.task.OnItemLongClickListener;
 import ada.osc.taskie.view.task.TaskAdapter;
-import ada.osc.taskie.view.task.TaskClickListener;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import retrofit2.Call;
@@ -42,8 +42,8 @@ public class CompletedTasksFragment extends Fragment {
 
 
     @BindView(R.id.recycler_view_tasks)
-    RecyclerView mTasksRecyclerView;
-    private TaskAdapter mTaskAdapter;
+    RecyclerView completedTasksRecyclerView;
+    private TaskAdapter completedTasksAdapter;
 
     OnItemLongClickListener onItemLongClickListener;
 
@@ -66,18 +66,24 @@ public class CompletedTasksFragment extends Fragment {
 
     //RecyclerView and item actions
     private void setUpTaskRecyclerView() {
-        mTaskAdapter = new TaskAdapter(onItemLongClickListener);
+        completedTasksAdapter = new TaskAdapter(onItemLongClickListener);
         RecyclerView.LayoutManager llm = new LinearLayoutManager(getActivity());
-        mTasksRecyclerView.setLayoutManager(llm);
-        mTasksRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mTasksRecyclerView.setAdapter(mTaskAdapter);
+        completedTasksRecyclerView.setLayoutManager(llm);
+        completedTasksRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        completedTasksRecyclerView.setAdapter(completedTasksAdapter);
+        completedTasksAdapter.setOnBottomReachedListener(new TaskAdapter.OnBottomReachedListener() {
+            @Override
+            public void onBottomReached(int position) {
+
+            }
+        });
         getCompletedTasks();
     }
 
     private void setUpTaskClickListener() {
         onItemLongClickListener = new OnItemLongClickListener() {
             @Override
-            public boolean deleteTask(Task task) {
+            public boolean deleteTask(Task task, int position) {
                 askForDeleteConfirmation(task);
                 return true;
             }
@@ -88,21 +94,25 @@ public class CompletedTasksFragment extends Fragment {
     //Server side actions with tasks
     //Get all tasks
     private void getCompletedTasks() {
-        Call<TaskList> taskListCall = App.getApiService()
-                .getCompletedTasks(SharedPrefsUtil.getPreferencesField(getActivity()
-                        , SharedPrefsUtil.TOKEN));
-        taskListCall.enqueue(new Callback<TaskList>() {
-            @Override
-            public void onResponse(Call<TaskList> call, Response<TaskList> response) {
-                if (response.isSuccessful()) {
-                    mTaskAdapter.refreshData(response.body().mTaskList);
+        if (isNetworkAvailable()) {
+            Call<TaskList> taskListCall = App.getApiService()
+                    .getCompletedTasks(SharedPrefsUtil.getPreferencesField(getActivity()
+                            , SharedPrefsUtil.TOKEN));
+            taskListCall.enqueue(new Callback<TaskList>() {
+                @Override
+                public void onResponse(Call<TaskList> call, Response<TaskList> response) {
+                    if (response.isSuccessful()) {
+                        completedTasksAdapter.refreshData(response.body().getTaskList());
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<TaskList> call, Throwable t) {
-            }
-        });
+                @Override
+                public void onFailure(Call<TaskList> call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     //Delete
@@ -125,19 +135,30 @@ public class CompletedTasksFragment extends Fragment {
     }
 
     private void deleteTaskOnServer(String taskId) {
-        Call deleteTaskCall = App.getApiService().deleteTask(SharedPrefsUtil.getPreferencesField(getActivity()
-                , SharedPrefsUtil.TOKEN), taskId);
-        deleteTaskCall.enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                getCompletedTasks();
-                Toast.makeText(getActivity(), "Task deleted", Toast.LENGTH_SHORT).show();
-            }
+        if (isNetworkAvailable()) {
+            Call deleteTaskCall = App.getApiService().deleteTask(SharedPrefsUtil.getPreferencesField(getActivity()
+                    , SharedPrefsUtil.TOKEN), taskId);
+            deleteTaskCall.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    getCompletedTasks();
+                    Toast.makeText(getActivity(), "Task deleted", Toast.LENGTH_SHORT).show();
+                }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-            }
-        });
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
 
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

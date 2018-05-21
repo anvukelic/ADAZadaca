@@ -6,24 +6,24 @@ dataClass=ada.osc.taskie.model.Task
 tableName=tasks
 # --table-fields-start--
 # --field-start--
-fieldName=mId
+fieldName=id
 columnName=id
 id=true
 # --field-end--
 # --field-start--
-fieldName=mTitle
+fieldName=title
 columnName=title
 # --field-end--
 # --field-start--
-fieldName=mDescription
+fieldName=description
 columnName=description
 # --field-end--
 # --field-start--
-fieldName=mPriority
+fieldName=priority
 columnName=priority
 # --field-end--
 # --field-start--
-fieldName=mDate
+fieldName=date
 columnName=date
 # --field-end--
 # --field-start--

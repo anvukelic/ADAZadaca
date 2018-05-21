@@ -11,5 +11,9 @@ import java.util.List;
 public class TaskList {
     @Expose
     @SerializedName("notes")
-    public List<Task> mTaskList;
+    private List<Task> tasks;
+
+    public List<Task> getTaskList() {
+        return tasks;
+    }
 }

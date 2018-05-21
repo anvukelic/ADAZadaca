@@ -4,6 +4,8 @@ package ada.osc.taskie.view.task.fragments;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -43,10 +45,10 @@ public class FavoriteTasksFragment extends Fragment implements RecyclerItemTouch
     }
 
     @BindView(R.id.recycler_view_tasks)
-    RecyclerView mTasksRecyclerView;
-    private TaskAdapter mTaskAdapter;
+    RecyclerView favooriteTasksRecyclerView;
+    private TaskAdapter favoriteTasksAdapter;
 
-    TaskClickListener mListener;
+    TaskClickListener taskClickListener;
     OnItemLongClickListener onItemLongClickListener;
 
     OnItemUpdateListener taskUpdateListener;
@@ -82,24 +84,29 @@ public class FavoriteTasksFragment extends Fragment implements RecyclerItemTouch
 
     //RecyclerView and item actions
     private void setUpTaskRecyclerView() {
-        mTaskAdapter = new TaskAdapter(mListener,onItemLongClickListener, false);
+        favoriteTasksAdapter = new TaskAdapter(taskClickListener, onItemLongClickListener, false);
         RecyclerView.LayoutManager llm = new LinearLayoutManager(getActivity());
-        mTasksRecyclerView.setLayoutManager(llm);
-        mTasksRecyclerView.setItemAnimator(new DefaultItemAnimator());
-        mTasksRecyclerView.setAdapter(mTaskAdapter);
+        favooriteTasksRecyclerView.setLayoutManager(llm);
+        favooriteTasksRecyclerView.setItemAnimator(new DefaultItemAnimator());
+        favooriteTasksRecyclerView.setAdapter(favoriteTasksAdapter);
+        favoriteTasksAdapter.setOnBottomReachedListener(new TaskAdapter.OnBottomReachedListener() {
+            @Override
+            public void onBottomReached(int position) {
+
+            }
+        });
         getFavoriteTasks();
     }
 
     private void setUpTaskClickListener() {
         onItemLongClickListener = new OnItemLongClickListener() {
             @Override
-            public boolean deleteTask(Task task) {
+            public boolean deleteTask(Task task, int position) {
                 askForDeleteConfirmation(task);
                 return true;
             }
         };
-
-        mListener = new TaskClickListener() {
+        taskClickListener = new TaskClickListener() {
             @Override
             public void onClick(Task task) {
                 taskUpdateListener.taskUpdate(task);
@@ -136,41 +143,51 @@ public class FavoriteTasksFragment extends Fragment implements RecyclerItemTouch
     private void setUpRefreshListener() {
         ((TaskActivity) getActivity()).setFragmentRefreshListener(new FragmentRefreshListener() {
             @Override
-            public void onCreateRefresh() {
+            public void onCreateTask(Task task) {
                 getFavoriteTasks();
             }
+
+            @Override
+            public void onTaskUpdate(Task task) {
+                getFavoriteTasks();
+            }
+
         });
     }
 
     private void setUpTaskSwipe() {
         ItemTouchHelper.SimpleCallback itemTouchHelperCallback = new RecyclerItemTouchHelper(0, ItemTouchHelper.LEFT, this);
-        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(mTasksRecyclerView);
+        new ItemTouchHelper(itemTouchHelperCallback).attachToRecyclerView(favooriteTasksRecyclerView);
     }
 
     @Override
     public void onSwiped(RecyclerView.ViewHolder viewHolder, int direction, int position) {
-        removeTaskFromFavorites(mTaskAdapter.getItem(position));
-        mTaskAdapter.removeItem(position);
+        removeTaskFromFavorites(favoriteTasksAdapter.getItem(position));
+        favoriteTasksAdapter.removeItem(position);
     }
 
     //Server side actions with tasks
     //Get all tasks
     public void getFavoriteTasks() {
-        Call<TaskList> taskListCall = App.getApiService()
-                .getFavoriteTasks(SharedPrefsUtil.getPreferencesField(getActivity()
-                        , SharedPrefsUtil.TOKEN));
-        taskListCall.enqueue(new Callback<TaskList>() {
-            @Override
-            public void onResponse(Call<TaskList> call, Response<TaskList> response) {
-                if (response.isSuccessful()) {
-                    mTaskAdapter.refreshData(response.body().mTaskList);
+        if (isNetworkAvailable()) {
+            Call<TaskList> taskListCall = App.getApiService()
+                    .getFavoriteTasks(SharedPrefsUtil.getPreferencesField(getActivity()
+                            , SharedPrefsUtil.TOKEN));
+            taskListCall.enqueue(new Callback<TaskList>() {
+                @Override
+                public void onResponse(Call<TaskList> call, Response<TaskList> response) {
+                    if (response.isSuccessful()) {
+                        favoriteTasksAdapter.refreshData(response.body().getTaskList());
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call<TaskList> call, Throwable t) {
-            }
-        });
+                @Override
+                public void onFailure(Call<TaskList> call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     //Delete
@@ -194,69 +211,92 @@ public class FavoriteTasksFragment extends Fragment implements RecyclerItemTouch
     }
 
     private void deleteTask(String taskId) {
-        Call deleteTaskCall = App.getApiService().deleteTask(SharedPrefsUtil.getPreferencesField(getActivity()
-                , SharedPrefsUtil.TOKEN), taskId);
-        deleteTaskCall.enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                getFavoriteTasks();
-                Toast.makeText(getActivity(), "Task deleted", Toast.LENGTH_SHORT).show();
-            }
+        if (isNetworkAvailable()) {
+            Call deleteTaskCall = App.getApiService().deleteTask(SharedPrefsUtil.getPreferencesField(getActivity()
+                    , SharedPrefsUtil.TOKEN), taskId);
+            deleteTaskCall.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    getFavoriteTasks();
+                    Toast.makeText(getActivity(), "Task deleted", Toast.LENGTH_SHORT).show();
+                }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-            }
-        });
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
 
     }
 
     //Activate on swipe right, make swiped item favorite
     private void removeTaskFromFavorites(Task task) {
-        Call faveTaskCall = App.getApiService().faveTask(SharedPrefsUtil.getPreferencesField(getActivity()
-                , SharedPrefsUtil.TOKEN), task.getId());
-        faveTaskCall.enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                Toast.makeText(getActivity(), "Task removed", Toast.LENGTH_SHORT).show();
-            }
+        if (isNetworkAvailable()) {
+            Call faveTaskCall = App.getApiService().faveTask(SharedPrefsUtil.getPreferencesField(getActivity()
+                    , SharedPrefsUtil.TOKEN), task.getId());
+            faveTaskCall.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    Toast.makeText(getActivity(), "Task removed", Toast.LENGTH_SHORT).show();
+                }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-            }
-        });
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void changeTaskPriority(Task task) {
-        Call postUpdateTaskCall = App.getApiService()
-                .updateTask(SharedPrefsUtil.getPreferencesField(getActivity()
-                        , SharedPrefsUtil.TOKEN), task);
-        postUpdateTaskCall.enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                if (response.isSuccessful()) {
-                    getFavoriteTasks();
+        if (isNetworkAvailable()) {
+            Call postUpdateTaskCall = App.getApiService()
+                    .updateTask(SharedPrefsUtil.getPreferencesField(getActivity()
+                            , SharedPrefsUtil.TOKEN), task);
+            postUpdateTaskCall.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    if (response.isSuccessful()) {
+                        getFavoriteTasks();
+                    }
                 }
-            }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-            }
-        });
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void changeTaskStatus(Task task) {
-        Call changeStatusCall = App.getApiService().changeTaskStatus(SharedPrefsUtil.getPreferencesField(getActivity()
-                , SharedPrefsUtil.TOKEN), task.getId());
-        changeStatusCall.enqueue(new Callback() {
-            @Override
-            public void onResponse(Call call, Response response) {
-                getFavoriteTasks();
-            }
+        if (isNetworkAvailable()) {
+            Call changeStatusCall = App.getApiService().changeTaskStatus(SharedPrefsUtil.getPreferencesField(getActivity()
+                    , SharedPrefsUtil.TOKEN), task.getId());
+            changeStatusCall.enqueue(new Callback() {
+                @Override
+                public void onResponse(Call call, Response response) {
+                    getFavoriteTasks();
+                }
 
-            @Override
-            public void onFailure(Call call, Throwable t) {
-            }
-        });
+                @Override
+                public void onFailure(Call call, Throwable t) {
+                }
+            });
+        } else {
+            Toast.makeText(getActivity(), "No internet connection", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
 }

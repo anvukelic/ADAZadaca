@@ -26,27 +26,39 @@ import butterknife.OnLongClick;
  * Created by avukelic on 28-Apr-18.
  */
 public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder> {
-    private List<Task> mTasks;
-    private TaskClickListener mListener;
-    private OnItemLongClickListener mLongClickListener;
+    public interface OnBottomReachedListener {
+
+        void onBottomReached(int position);
+
+    }
+    public void setOnBottomReachedListener(OnBottomReachedListener onBottomReachedListener){
+
+        this.onBottomReachedListener = onBottomReachedListener;
+    }
+
+    private List<Task> tasks;
+    private TaskClickListener taskClickListener;
+    private OnItemLongClickListener onItemLongClickListener;
     private boolean allTasks;
+
+    OnBottomReachedListener onBottomReachedListener;
 
 
     public TaskAdapter(TaskClickListener listener,OnItemLongClickListener onItemLongClickListener, boolean allTasks) {
-        mListener = listener;
-        mLongClickListener = onItemLongClickListener;
+        taskClickListener = listener;
+        this.onItemLongClickListener = onItemLongClickListener;
         this.allTasks = allTasks;
-        mTasks = new ArrayList<>();
+        tasks = new ArrayList<>();
     }
 
     public TaskAdapter(OnItemLongClickListener onItemLongClickListener){
-        mLongClickListener = onItemLongClickListener;
-        mTasks = new ArrayList<>();
+        this.onItemLongClickListener = onItemLongClickListener;
+        tasks = new ArrayList<>();
     }
 
     public void refreshData(List<Task> tasks) {
-        mTasks.clear();
-        mTasks.addAll(tasks);
+        this.tasks.clear();
+        this.tasks.addAll(tasks);
         notifyDataSetChanged();
     }
 
@@ -55,45 +67,67 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
      */
     @Override
     public void onBindViewHolder(final TaskViewHolder holder, final int position) {
-        Task t = mTasks.get(position);
-        holder.mTitle.setText(t.getTitle());
-        holder.mDescription.setText(t.getDescription());
+        if (position == tasks.size() - 1){
+            onBottomReachedListener.onBottomReached(position);
+        }
+        Task t = tasks.get(position);
+        holder.title.setText(t.getTitle());
+        holder.description.setText(t.getDescription());
         switch (t.getPriority()) {
             case 1:
-                holder.mPrioritiy.setImageResource(R.drawable.shape_low_priority);
+                holder.priority.setImageResource(R.drawable.shape_low_priority);
                 break;
             case 2:
-                holder.mPrioritiy.setImageResource(R.drawable.shape_medium_priority);
+                holder.priority.setImageResource(R.drawable.shape_medium_priority);
                 break;
             case 3:
-                holder.mPrioritiy.setImageResource(R.drawable.shape_high_priority);
+                holder.priority.setImageResource(R.drawable.shape_high_priority);
         }
-        holder.mDate.setText(formatDate(new Date(Long.parseLong(t.getDate()))));
+        holder.date.setText(formatDate(new Date(Long.parseLong(t.getDate()))));
         if (allTasks) {
-            holder.mRemoveItem.setVisibility(View.GONE);
+            holder.favoriteBackground.setVisibility(View.GONE);
         } else {
-            holder.mFavoriteItem.setVisibility(View.GONE);
+            holder.notFavoriteBackground.setVisibility(View.GONE);
         }
         if (t.isDone()) {
-            holder.mStatus.setVisibility(View.GONE);
+            holder.status.setVisibility(View.GONE);
         } else {
-            holder.mStatus.setVisibility(View.VISIBLE);
+            holder.status.setVisibility(View.VISIBLE);
         }
     }
 
 
     @Override
     public int getItemCount() {
-        return mTasks.size();
+        return tasks.size();
     }
 
     public Task getItem(int position) {
-        return mTasks.get(position);
+        return tasks.get(position);
     }
 
     public void removeItem(int position) {
-        mTasks.remove(position);
+        tasks.remove(position);
         notifyItemRemoved(position);
+    }
+
+    public void addItems(List<Task> newTasks){
+        tasks.addAll(newTasks);
+        notifyDataSetChanged();
+    }
+
+    public void addItem(Task task){
+        tasks.add(task);
+        notifyDataSetChanged();
+    }
+
+    public void updateItem(Task task){
+        Task taskForUpdate = tasks.get(tasks.indexOf(task));
+        task.setTitle(task.getTitle());
+        task.setDescription(task.getDescription());
+        task.setDate(task.getDate());
+        taskForUpdate.setPriority(task.getPriority());
+        notifyDataSetChanged();
     }
 
     @Override
@@ -105,23 +139,23 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
     public class TaskViewHolder extends RecyclerView.ViewHolder {
         @BindView(R.id.textview_task_title)
-        TextView mTitle;
+        TextView title;
         @BindView(R.id.textview_task_description)
-        TextView mDescription;
+        TextView description;
         @BindView(R.id.textview_task_date)
-        TextView mDate;
+        TextView date;
         @BindView(R.id.imageview_task_priority)
-        ImageView mPrioritiy;
+        ImageView priority;
         @BindView(R.id.switch_task_status)
-        Switch mStatus;
+        Switch status;
         @BindView(R.id.view_background)
-        public RelativeLayout mViewBackground;
+        public RelativeLayout backgroundLayer;
         @BindView(R.id.view_foreground)
-        public RelativeLayout mViewForeground;
+        public RelativeLayout foregroundLayer;
         @BindView(R.id.favorite_item)
-        LinearLayout mFavoriteItem;
+        LinearLayout notFavoriteBackground;
         @BindView(R.id.remove_item)
-        LinearLayout mRemoveItem;
+        LinearLayout favoriteBackground;
 
 
         public TaskViewHolder(View view) {
@@ -131,22 +165,22 @@ public class TaskAdapter extends RecyclerView.Adapter<TaskAdapter.TaskViewHolder
 
         @OnClick
         public void onTaskClick() {
-            mListener.onClick(mTasks.get(getAdapterPosition()));
+            taskClickListener.onClick(tasks.get(getAdapterPosition()));
         }
 
         @OnLongClick
         public boolean onLongClick() {
-            return mLongClickListener.deleteTask(mTasks.get(getAdapterPosition()));
+            return onItemLongClickListener.deleteTask(tasks.get(getAdapterPosition()), getAdapterPosition());
         }
 
         @OnClick(R.id.imageview_task_priority)
         public void changePriorityOnClick() {
-            mListener.onPriorityChangeClick(mTasks.get(getAdapterPosition()));
+            taskClickListener.onPriorityChangeClick(tasks.get(getAdapterPosition()));
         }
 
         @OnClick(R.id.switch_task_status)
         public void changeStatusOnSwitch() {
-            mListener.onStatusSwitchChange(mTasks.get(getAdapterPosition()));
+            taskClickListener.onStatusSwitchChange(tasks.get(getAdapterPosition()));
         }
     }
     private String formatDate(Date date) {

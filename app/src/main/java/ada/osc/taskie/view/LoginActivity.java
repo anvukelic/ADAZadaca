@@ -63,6 +63,7 @@ public class LoginActivity extends AppCompatActivity {
                     SharedPrefsUtil.storePreferencesField(LoginActivity.this, SharedPrefsUtil.TOKEN, loginResponse.mToken);
 
                     startTaskActivity();
+                    finish();
                 } else {
                     Toast.makeText(LoginActivity.this,"Username or password invalid", Toast.LENGTH_SHORT).show();
                 }

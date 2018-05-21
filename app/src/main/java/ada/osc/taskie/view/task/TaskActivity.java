@@ -1,13 +1,15 @@
 package ada.osc.taskie.view.task;
 
 import android.app.DialogFragment;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.view.View;
 import android.widget.FrameLayout;
 
 import ada.osc.taskie.Consts;
@@ -54,6 +56,12 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
         setUpTabLayout();
     }
 
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        finish();
+    }
+
     private void setUpTabLayout() {
         TabLayout tabLayout = findViewById(R.id.sliding_tabs);
         tabLayout.addTab(tabLayout.newTab().setText("All"));
@@ -96,7 +104,7 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
     }
 
     @OnClick(R.id.fab)
-    void onFabClick(){
+    void onFabClick() {
         showTaskDialogFragment(Consts.CREATE_ACTION, null);
     }
 
@@ -115,12 +123,17 @@ public class TaskActivity extends AppCompatActivity implements TaskDialogFragmen
 
     //Called when TaskDialogFragment is close with positive button
     @Override
-    public void onTaskChange(int action) {
-        getFragmentRefreshListener().onCreateRefresh();
+    public void onTaskChange(int action, Task task) {
+        if (action == Consts.CREATE_ACTION) {
+            getFragmentRefreshListener().onCreateTask(task);
+        } else {
+            getFragmentRefreshListener().onTaskUpdate(task);
+        }
     }
 
     @Override
     public void taskUpdate(Task task) {
         showTaskDialogFragment(Consts.UPDATE_ACTION, task);
     }
+
 }

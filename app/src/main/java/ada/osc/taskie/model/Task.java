@@ -23,89 +23,89 @@ public class Task implements Serializable {
 
     @Expose
     @SerializedName("id")
-    private String mId;
+    private String id;
     @Expose
     @SerializedName("title")
-    private String mTitle;
+    private String title;
     @Expose
     @SerializedName("content")
-    private String mDescription;
+    private String description;
     @Expose
     @SerializedName("taskPriority")
-    private int mPriority;
+    private int priority;
     @Expose
     @SerializedName("dueDate")
-    private String mDate;
+    private String date;
     @Expose
     @SerializedName("isCompleted")
-    private boolean mCompleted;
+    private boolean isCompleted;
 
     public Task() {
     }
 
-    public Task(String mTitle, String mDescription, int mPriority, String mDate) {
-        mId = UUID.randomUUID().toString();
-        this.mTitle = mTitle;
-        this.mDescription = mDescription;
-        this.mPriority = mPriority;
-        this.mDate = mDate;
-        mCompleted = false;
+    public Task(String title, String description, int priority, String date) {
+        id = UUID.randomUUID().toString();
+        this.title = title;
+        this.description = description;
+        this.priority = priority;
+        this.date = date;
+        isCompleted = false;
     }
-    public Task(String mId, String mTitle, String mDescription, int mPriority, String mDate){
-        this.mId = mId;
-        this.mTitle = mTitle;
-        this.mDescription = mDescription;
-        this.mPriority = mPriority;
-        this.mDate = mDate;
-        mCompleted = false;
+    public Task(String id, String title, String description, int priority, String date){
+        this.id = id;
+        this.title = title;
+        this.description = description;
+        this.priority = priority;
+        this.date = date;
+        isCompleted = false;
     }
 
     public String getId() {
-        return mId;
+        return id;
     }
 
     public void setId(String mId) {
-        this.mId = mId;
+        this.id = mId;
     }
 
     public String getTitle() {
-        return mTitle;
+        return title;
     }
 
     public void setTitle(String mTitle) {
-        this.mTitle = mTitle;
+        this.title = mTitle;
     }
 
     public String getDescription() {
-        return mDescription;
+        return description;
     }
 
     public void setDescription(String mDescription) {
-        this.mDescription = mDescription;
+        this.description = mDescription;
     }
 
     public int getPriority() {
-        return mPriority;
+        return priority;
     }
 
     public void setPriority(int mPriority) {
-        this.mPriority = mPriority;
+        this.priority = mPriority;
     }
 
     public String getDate() {
-        return mDate;
+        return date;
     }
 
     public void setDate(String mDate) {
-        this.mDate = mDate;
+        this.date = mDate;
     }
 
     public boolean isDone() {
-        return mCompleted;
+        return isCompleted;
     }
 
     public void setDone(boolean Status) {
-        this.mCompleted = Status;
+        this.isCompleted = Status;
     }
 
 
