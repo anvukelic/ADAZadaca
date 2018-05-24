@@ -21,9 +21,6 @@ public class App extends Application {
     private static ApiService apiService;
     private static Realm realm;
 
-    private static ApiInteractor apiInteractor;
-    private static DbInteractor dbInteractor;
-
     @Override
     public void onCreate() {
         super.onCreate();
@@ -38,22 +35,12 @@ public class App extends Application {
         Realm.setDefaultConfiguration(realmConfig);
 
         realm = Realm.getDefaultInstance();
-
-        apiInteractor = new ApiInteractorImpl();
-        dbInteractor = new DbInteractorImpl();
     }
 
     public static Realm getRealm() {
         return realm;
     }
 
-    public static ApiInteractor getApiInteractor() {
-        return apiInteractor;
-    }
-
-    public static DbInteractor getDbInteractor() {
-        return dbInteractor;
-    }
 
     public static ApiService getApiService() {
         return apiService;
