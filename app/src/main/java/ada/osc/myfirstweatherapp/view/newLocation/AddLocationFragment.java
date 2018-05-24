@@ -29,7 +29,6 @@ import retrofit2.Response;
 public class AddLocationFragment extends Fragment implements NewLocationContract.View {
 
 
-
     @BindView(R.id.fragment_add_location_enter_city_edit_text)
     EditText mEnterLocationNameEditText;
 
@@ -46,18 +45,13 @@ public class AddLocationFragment extends Fragment implements NewLocationContract
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         ButterKnife.bind(this,view);
-        presenter = new NewLocationPresenter(App.getApiInteractor(),App.getDbInteractor());
+        presenter = new NewLocationPresenter();
         presenter.setView(this);
     }
 
     @OnClick(R.id.fragment_add_location_button)
     public void addNewLocation(){
-        final String location = mEnterLocationNameEditText.getText().toString();
-        if(location.isEmpty() || location.trim().length() ==0){
-            mEnterLocationNameEditText.setError(getActivity().getString(R.string.empty_location_string_error_message));
-        } else {
-            presenter.addNewLocation(location);
-        }
+        presenter.addNewLocation(mEnterLocationNameEditText.getText().toString());
     }
 
     @Override
@@ -74,6 +68,11 @@ public class AddLocationFragment extends Fragment implements NewLocationContract
     @Override
     public void showOnLocationDoesNotExistsError() {
         mEnterLocationNameEditText.setError(getActivity().getString(R.string.location_does_not_exists_string_error_message));
+    }
+
+    @Override
+    public void showOnLocationFieldEmpty() {
+        mEnterLocationNameEditText.setError(getActivity().getString(R.string.empty_location_string_error_message));
     }
 
 }

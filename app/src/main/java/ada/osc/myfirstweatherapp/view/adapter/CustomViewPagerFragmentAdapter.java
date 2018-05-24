@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ada.osc.myfirstweatherapp.model.LocationWrapper;
-import ada.osc.myfirstweatherapp.view.locations.WeatherFragment;
+import ada.osc.myfirstweatherapp.view.weather.WeatherFragment;
 
 public class CustomViewPagerFragmentAdapter extends FragmentPagerAdapter {
     private final List<LocationWrapper> mCitiesList = new ArrayList<>();

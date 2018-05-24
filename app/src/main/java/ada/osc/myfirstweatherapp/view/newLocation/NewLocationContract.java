@@ -14,6 +14,8 @@ public interface NewLocationContract {
 
         void showOnLocationDoesNotExistsError();
 
+        void showOnLocationFieldEmpty();
+
     }
 
     interface Presenter{
@@ -21,9 +23,6 @@ public interface NewLocationContract {
         void setView(NewLocationContract.View newLocationView);
 
         void addNewLocation(String location);
-
-        boolean isLocationAlreadyOnList(String location);
-
     }
 
 }

@@ -1,6 +1,7 @@
 package ada.osc.myfirstweatherapp.interaction;
 
 import ada.osc.myfirstweatherapp.model.WeatherResponse;
+import retrofit2.Call;
 import retrofit2.Callback;
 
 /**
@@ -9,4 +10,6 @@ import retrofit2.Callback;
 public interface ApiInteractor {
 
     void checkLocationIfExists(String location, Callback<WeatherResponse> callback);
+
+    void getWeather(String location, Callback<WeatherResponse> callback);
 }

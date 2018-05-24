@@ -1,7 +1,9 @@
 package ada.osc.myfirstweatherapp.presentation;
 
 import ada.osc.myfirstweatherapp.interaction.ApiInteractor;
+import ada.osc.myfirstweatherapp.interaction.ApiInteractorImpl;
 import ada.osc.myfirstweatherapp.interaction.DbInteractor;
+import ada.osc.myfirstweatherapp.interaction.DbInteractorImpl;
 import ada.osc.myfirstweatherapp.model.WeatherResponse;
 import ada.osc.myfirstweatherapp.view.newLocation.NewLocationContract;
 import retrofit2.Call;
@@ -13,13 +15,13 @@ import retrofit2.Response;
  */
 public class NewLocationPresenter implements NewLocationContract.Presenter {
 
-    private ApiInteractor apiInteractor;
-    private DbInteractor dbInteractor;
+    private final ApiInteractor apiInteractor;
+    private final DbInteractor dbInteractor;
     private NewLocationContract.View newLocationView;
 
-    public NewLocationPresenter(ApiInteractor apiInteractor, DbInteractor dbInteractor) {
-        this.apiInteractor = apiInteractor;
-        this.dbInteractor = dbInteractor;
+    public NewLocationPresenter() {
+        apiInteractor = new ApiInteractorImpl();
+        dbInteractor = new DbInteractorImpl();
     }
 
     @Override
@@ -29,11 +31,16 @@ public class NewLocationPresenter implements NewLocationContract.Presenter {
 
     @Override
     public void addNewLocation(String location) {
-        apiInteractor.checkLocationIfExists(location, getWeatherCheckCallback(location));
+        if (location.isEmpty() || location.trim().length() == 0) {
+            newLocationView.showOnLocationFieldEmpty();
+        } else if (isLocationAlreadyOnList(location)) {
+            newLocationView.showOnLocationAlreadyExistsError();
+        } else {
+            apiInteractor.checkLocationIfExists(location, getWeatherCheckCallback(location));
+        }
     }
 
-    @Override
-    public boolean isLocationAlreadyOnList(String location) {
+    private boolean isLocationAlreadyOnList(String location) {
         return dbInteractor.isLocationAlreadyOnList(location);
     }
 
@@ -41,13 +48,14 @@ public class NewLocationPresenter implements NewLocationContract.Presenter {
         return new Callback<WeatherResponse>() {
             @Override
             public void onResponse(Call<WeatherResponse> call, Response<WeatherResponse> response) {
-                if(response.isSuccessful()){
+                if (response.isSuccessful()) {
                     saveLocation(location);
                     newLocationView.onNewLocationAdded();
                 } else {
                     newLocationView.showOnLocationDoesNotExistsError();
                 }
             }
+
             @Override
             public void onFailure(Call<WeatherResponse> call, Throwable t) {
             }

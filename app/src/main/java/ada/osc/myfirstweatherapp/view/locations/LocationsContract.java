@@ -9,14 +9,23 @@ import ada.osc.myfirstweatherapp.model.LocationWrapper;
  */
 public interface LocationsContract {
 
-    interface View{
+    interface View {
         void showLocations(List<LocationWrapper> locations);
+
         void onLocationRemove();
+
+        void onNewLocationDrawerItemClicked();
+
+        void onLocationDrawerItemClicked(int itemId);
     }
 
-    interface Presenter{
+    interface Presenter {
         void setView(LocationsContract.View locationsView);
+
         void getLocations();
+
         void deleteLocation(String location);
+
+        void onDrawerItemClicked(int itemId);
     }
 }

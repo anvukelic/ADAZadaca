@@ -19,6 +19,7 @@ import java.util.List;
 
 import ada.osc.myfirstweatherapp.App;
 import ada.osc.myfirstweatherapp.presentation.LocationPresenter;
+import ada.osc.myfirstweatherapp.utils.AlertDialogUtils;
 import ada.osc.myfirstweatherapp.view.adapter.CustomViewPagerFragmentAdapter;
 import ada.osc.myfirstweatherapp.R;
 import ada.osc.myfirstweatherapp.model.LocationWrapper;
@@ -28,7 +29,7 @@ import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
-public class LocationsActivity extends AppCompatActivity implements LocationsContract.View {
+public class LocationsActivity extends AppCompatActivity implements LocationsContract.View, AlertDialogUtils.OnAlertDialogButtonClickListener {
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -40,7 +41,6 @@ public class LocationsActivity extends AppCompatActivity implements LocationsCon
     ViewPager viewPager;
     private CustomViewPagerFragmentAdapter adapter;
 
-    private Realm realm;
     private Menu drawerMenu;
     private SubMenu drawerSubMenu;
 
@@ -51,7 +51,7 @@ public class LocationsActivity extends AppCompatActivity implements LocationsCon
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_locations);
         ButterKnife.bind(this);
-        presenter = new LocationPresenter(App.getApiInteractor(),App.getDbInteractor());
+        presenter = new LocationPresenter();
         presenter.setView(this);
         initUI();
     }
@@ -82,9 +82,6 @@ public class LocationsActivity extends AppCompatActivity implements LocationsCon
     }
 
     private void initUI() {
-        if (viewPager != null) {
-            viewPager.setOffscreenPageLimit(3);
-        }
         setUpLocationAdapter();
         initToolbar();
         initNavigationDrawer();
@@ -100,22 +97,10 @@ public class LocationsActivity extends AppCompatActivity implements LocationsCon
         navigationView.setNavigationItemSelectedListener(new NavigationView.OnNavigationItemSelectedListener() {
             @Override
             public boolean onNavigationItemSelected(MenuItem item) {
-                handleItemSelectedClick(item.getItemId());
+                presenter.onDrawerItemClicked(item.getItemId());
                 return false;
             }
         });
-    }
-
-    private void handleItemSelectedClick(int itemID) {
-        switch (itemID) {
-            case R.id.menu_add_new_location: {
-                startActivity(new Intent(this, AddNewLocationActivity.class));
-                drawerLayout.closeDrawers();
-                break;
-            }
-            default:
-                askForDelete(adapter.getItemLocation(itemID));
-        }
     }
 
     private void initToolbar() {
@@ -138,25 +123,6 @@ public class LocationsActivity extends AppCompatActivity implements LocationsCon
         presenter.getLocations();
     }
 
-    private void askForDelete(final String location) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Delete location");
-        builder.setMessage("Do you want to delete location " + location);
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                presenter.deleteLocation(location);
-                dialog.dismiss();
-            }
-        }).setNegativeButton("No", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-            }
-        });
-        AlertDialog alertDialog = builder.create();
-        alertDialog.show();
-    }
-
     @Override
     public void showLocations(List<LocationWrapper> locations) {
         adapter.refreshData(locations);
@@ -168,5 +134,21 @@ public class LocationsActivity extends AppCompatActivity implements LocationsCon
         drawerLayout.closeDrawers();
         setUpLocationAdapter();
         addLocationsOnSubMenu();
+    }
+
+    @Override
+    public void onNewLocationDrawerItemClicked() {
+        startActivity(new Intent(this, AddNewLocationActivity.class));
+        drawerLayout.closeDrawers();
+    }
+
+    @Override
+    public void onLocationDrawerItemClicked(int itemId) {
+        AlertDialogUtils.askForDeleteAlertDialog(this, adapter.getItemLocation(itemId), this);
+    }
+
+    @Override
+    public void onAlertDialogButtonClick(String location) {
+        presenter.deleteLocation(location);
     }
 }
