@@ -1,4 +1,4 @@
-package ada.osc.myfirstweatherapp.view;
+package ada.osc.myfirstweatherapp.view.newLocation;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;

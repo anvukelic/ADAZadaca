@@ -1,4 +1,4 @@
-package ada.osc.myfirstweatherapp.view;
+package ada.osc.myfirstweatherapp.view.locations;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
@@ -16,7 +16,6 @@ import ada.osc.myfirstweatherapp.App;
 import ada.osc.myfirstweatherapp.Constants;
 import ada.osc.myfirstweatherapp.R;
 import ada.osc.myfirstweatherapp.model.WeatherResponse;
-import ada.osc.myfirstweatherapp.network.ApiService;
 import ada.osc.myfirstweatherapp.network.NetworkUtils;
 import butterknife.BindView;
 import butterknife.ButterKnife;

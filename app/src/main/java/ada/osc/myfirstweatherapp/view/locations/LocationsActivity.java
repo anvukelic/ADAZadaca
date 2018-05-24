@@ -1,4 +1,4 @@
-package ada.osc.myfirstweatherapp.view;
+package ada.osc.myfirstweatherapp.view.locations;
 
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -15,15 +15,20 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
+import java.util.List;
+
+import ada.osc.myfirstweatherapp.App;
+import ada.osc.myfirstweatherapp.presentation.LocationPresenter;
 import ada.osc.myfirstweatherapp.view.adapter.CustomViewPagerFragmentAdapter;
 import ada.osc.myfirstweatherapp.R;
 import ada.osc.myfirstweatherapp.model.LocationWrapper;
+import ada.osc.myfirstweatherapp.view.newLocation.AddNewLocationActivity;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import io.realm.Realm;
 import io.realm.RealmResults;
 
-public class MainActivity extends AppCompatActivity {
+public class LocationsActivity extends AppCompatActivity implements LocationsContract.View {
 
     @BindView(R.id.toolbar)
     Toolbar toolbar;
@@ -39,12 +44,15 @@ public class MainActivity extends AppCompatActivity {
     private Menu drawerMenu;
     private SubMenu drawerSubMenu;
 
+    private LocationsContract.Presenter presenter;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_locations);
         ButterKnife.bind(this);
-        realm = Realm.getDefaultInstance();
+        presenter = new LocationPresenter(App.getApiInteractor(),App.getDbInteractor());
+        presenter.setView(this);
         initUI();
     }
 
@@ -98,6 +106,18 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    private void handleItemSelectedClick(int itemID) {
+        switch (itemID) {
+            case R.id.menu_add_new_location: {
+                startActivity(new Intent(this, AddNewLocationActivity.class));
+                drawerLayout.closeDrawers();
+                break;
+            }
+            default:
+                askForDelete(adapter.getItemLocation(itemID));
+        }
+    }
+
     private void initToolbar() {
         setSupportActionBar(toolbar);
         toolbar.setTitle(R.string.main_activity_title);
@@ -115,35 +135,18 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void setLocationsInAdapter() {
-        RealmResults<LocationWrapper> locationWrappers = realm.where(LocationWrapper.class).findAll();
-        adapter.refreshData(locationWrappers);
-        viewPager.setAdapter(adapter);
+        presenter.getLocations();
     }
 
-    private void handleItemSelectedClick(int itemID) {
-        switch (itemID) {
-            case R.id.menu_add_new_location: {
-                startActivity(new Intent(this, AddNewLocationActivity.class));
-                drawerLayout.closeDrawers();
-                break;
-            }
-            default:
-                askForDelete(itemID);
-        }
-    }
-
-    private void askForDelete(final int position) {
+    private void askForDelete(final String location) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Delete location");
-        builder.setMessage("Do you want to delete location " + adapter.getItemLocation(position));
+        builder.setMessage("Do you want to delete location " + location);
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
-                deleteLocation(adapter.getItemLocation(position));
+                presenter.deleteLocation(location);
                 dialog.dismiss();
-                drawerLayout.closeDrawers();
-                setUpLocationAdapter();
-                addLocationsOnSubMenu();
             }
         }).setNegativeButton("No", new DialogInterface.OnClickListener() {
             @Override
@@ -154,15 +157,16 @@ public class MainActivity extends AppCompatActivity {
         alertDialog.show();
     }
 
-    private void deleteLocation(final String location) {
-        realm.executeTransaction(new Realm.Transaction() {
-            @Override
-            public void execute(Realm realm) {
-                RealmResults<LocationWrapper> result = realm.where(LocationWrapper.class)
-                        .equalTo("location", location)
-                        .findAll();
-                result.deleteAllFromRealm();
-            }
-        });
+    @Override
+    public void showLocations(List<LocationWrapper> locations) {
+        adapter.refreshData(locations);
+        viewPager.setAdapter(adapter);
+    }
+
+    @Override
+    public void onLocationRemove() {
+        drawerLayout.closeDrawers();
+        setUpLocationAdapter();
+        addLocationsOnSubMenu();
     }
 }

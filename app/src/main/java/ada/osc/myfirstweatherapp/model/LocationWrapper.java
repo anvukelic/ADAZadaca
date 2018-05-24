@@ -13,15 +13,12 @@ public class LocationWrapper extends RealmObject {
 
     @Required
     @PrimaryKey
-    private String id;
-    @Required
     private String location;
 
     public LocationWrapper() {
     }
 
-    public LocationWrapper(String location, String id) {
-        this.id = id;
+    public LocationWrapper(String location) {
         this.location = location;
     }
 
