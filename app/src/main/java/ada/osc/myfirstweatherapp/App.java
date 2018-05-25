@@ -29,7 +29,7 @@ public class App extends Application {
         apiService = retrofit.create(ApiService.class);
         Realm.init(this);
         RealmConfiguration realmConfig = new RealmConfiguration.Builder()
-                .name("taskie.realm")
+                .name("weatherapp.realm")
                 .schemaVersion(1)
                 .build();
         Realm.setDefaultConfiguration(realmConfig);
